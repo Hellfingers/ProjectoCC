@@ -5,7 +5,6 @@
  */
 package Business;
 
-import java.io.File;
 
 /**
  *
@@ -16,8 +15,8 @@ public class Pergunta {
     private String enunciado;
     private String opcao1, opcao2, opcao3;
     private int correcta;
-    private File imagem;
-    private File musica;
+    private String imagem;
+    private String musica;
 
     public Pergunta() {
         this.enunciado = new String();
@@ -25,8 +24,8 @@ public class Pergunta {
         this.opcao2 = new String();
         this.opcao3 = new String();
         this.correcta = 0;
-        this.imagem = new File("");
-        this.musica = new File("");
+        this.imagem = new String();
+        this.musica = new String();
     }
 
     public Pergunta(String enunciado, String opcao1, String opcao2, String opcao3, int correcta, String pathImagem, String pathMusica) {
@@ -35,8 +34,8 @@ public class Pergunta {
         this.opcao2 = opcao2;
         this.opcao3 = opcao3;
         this.correcta = correcta;
-        this.imagem = new File(pathImagem);
-        this.musica = new File(pathMusica);
+        this.imagem = pathImagem;
+        this.musica = pathMusica;
     }
 
     public String getEnunciado() {
@@ -59,11 +58,11 @@ public class Pergunta {
         return this.correcta;
     }
 
-    public File getImagem() {
+    public String getImagem() {
         return this.imagem;
     }
 
-    public File getMusica() {
+    public String getMusica() {
         return this.musica;
     }
 
@@ -88,15 +87,15 @@ public class Pergunta {
     }
 
     public void setImagem(String path) {
-        this.imagem = new File(path);
+        this.imagem = path;
     }
 
     public void setMusica(String path) {
-        this.musica = new File(path);
+        this.musica = path;
     }
 
     public Pergunta clone(){
-        return new Pergunta(this.getEnunciado(), this.getOpcao1(), this.getOpcao2(), this.getOpcao3(), this.getCorrecta(), this.getImagem().getName(), this.getMusica().getName());
+        return new Pergunta(this.getEnunciado(), this.getOpcao1(), this.getOpcao2(), this.getOpcao3(), this.getCorrecta(), this.getImagem(), this.getMusica());
     }
     
 }
