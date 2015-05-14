@@ -4,12 +4,7 @@
  */
 package Cliente;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,18 +16,14 @@ public class Cliente {
 
     public static void main(String[] args) 
     {        
-        byte[] sendData = new byte[1024];
-        byte[] receiveData = new byte[1024];
-       
-        try {
-            
-            
-            DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-            clientSocket.receive(receivePacket);
-            
-            String modifiedSentence = new String(receivePacket.getData());
-            System.out.println("FROM SERVER:" + modifiedSentence);
-            clientSocket.close();
+        ComunicacaoCliente comC;
+        System.out.println("CLIENTE ON");
+        try 
+        {
+            comC = new ComunicacaoCliente();
+            comC.logInServer("user1", "zezinho");  
+            String user = comC.getRespostaString();            
+            System.out.println("Login completo com: " + user);
         } catch (IOException ex) 
         { Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex); }
     }

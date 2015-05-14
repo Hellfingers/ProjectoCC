@@ -32,7 +32,6 @@ public class Desafio {
     public Desafio(String nome, String criador) {
         this.nome = nome;
         this.criador = criador;
-        this.
     }
 
     public String getCriador() {

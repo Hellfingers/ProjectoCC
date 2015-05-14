@@ -4,19 +4,21 @@
  */
 package Comunicacao;
 
+import java.io.IOException;
+
 /**
  *
  * @author core
  */
 public interface ComunicacaoUDP 
 {
-    public int logInServer(String user, String password);
+    public Boolean logInServer(String user, String password) throws IOException;
     
-    public void criarDesafio();
+    public String criarDesafio(String desafio) throws IOException;
     
-    public void aceitarDesafio();
+    public void aceitarDesafio() throws IOException;
     
-    public void jogarDesafio();
+    public void jogarDesafio() throws IOException;
     
-    public void obterPontuacao();
+    public int obterPontuacao(String desaf) throws IOException;
 }

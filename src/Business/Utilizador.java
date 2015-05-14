@@ -13,29 +13,34 @@ public class Utilizador {
 
     private String username;
     private String password;
+    private boolean sessao;
     private int score;
 
     public Utilizador(String username, String password) {
         this.username = username;
         this.password = password;
+        this.sessao = false;
         this.score = 0;
     }
 
     public Utilizador() {
         this.username = new String();
         this.password = new String();
+        this.sessao = false;
         this.score = 0;
     }
 
     public Utilizador(String username, String password, int score) {
         this.username = username;
         this.password = password;
+        this.sessao = false;
         this.score = score;
     }
 
     public Utilizador(Utilizador ut) {
         this.username = ut.getUsername();
         this.password = ut.getPassword();
+        this.sessao = ut.getSessao();
         this.score = ut.getScore();
 
     }
@@ -51,6 +56,14 @@ public class Utilizador {
 
     public void setScore(int score) {
         this.score = score;
+    }
+    
+    public boolean getSessao() {
+        return this.sessao;
+    }
+
+    public void setSessao(boolean sessao) {
+        this.sessao = sessao;
     }
 
     public void setPassword(String password) {
@@ -80,15 +93,6 @@ public class Utilizador {
         }
         Utilizador ut = (Utilizador) obj;
         return (this.username.equals(ut.getUsername()) && this.password.equals(ut.getPassword()) && this.score == ut.getScore());
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 23 * hash + (this.username != null ? this.username.hashCode() : 0);
-        hash = 23 * hash + (this.password != null ? this.password.hashCode() : 0);
-        hash = 23 * hash + this.score;
-        return hash;
     }
 
     @Override
