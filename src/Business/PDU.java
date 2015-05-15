@@ -165,6 +165,44 @@ public class PDU
         return pduFinal;
     }
     
+    public static byte[] deleteChallengePDU(String name)
+    {
+        String alcunhaTer = name + '\0';
+        byte[] formato = formataPDU();
+        byte[] str = alcunhaTer.getBytes();
+        short tamanhoCampos = (short)(str.length);
+        
+        formato[4] = 10;
+        formato[5] = 1;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[str.length + formato.length];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+                       
+        return pduFinal;
+    }
+    
+    public static byte[] answerPDU(byte escolha,String name,byte nQuestao)
+    {
+        String alcunhaTer = name + '\0';
+        byte[] formato = formataPDU();
+        byte[] str = alcunhaTer.getBytes();
+        short tamanhoCampos = (short)(str.length+2);
+        
+        formato[4] = 11;
+        formato[5] = 1;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[str.length + formato.length+2];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        pduFinal[formato.length]=escolha;
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+        pduFinal[formato.length+str.length]=nQuestao;
+                                     
+        return pduFinal;
+    }
+    
     public static byte[] listRankingPDU()
     {
         byte[] formato=formataPDU();
