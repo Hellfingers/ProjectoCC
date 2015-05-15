@@ -134,7 +134,7 @@ public class PDU
         byte[] str = alcunhaTer.getBytes();
         short tamanhoCampos = (short)(str.length);
         
-        formato[4] = 3;
+        formato[4] = 8;
         formato[5] = 2;
         formato[6] = (byte)(tamanhoCampos & 0xff);
         formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
