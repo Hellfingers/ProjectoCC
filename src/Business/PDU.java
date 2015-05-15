@@ -132,18 +132,36 @@ public class PDU
         String alcunhaTer = name + '\0';
         byte[] formato = formataPDU();
         byte[] str = alcunhaTer.getBytes();
-        short tamanhoCampos = (short)(str.length);
+        short tamanhoCampos = (short)(str.length+data.length+hora.length);
         
         formato[4] = 8;
-        formato[5] = 2;
+        formato[5] = 3;
         formato[6] = (byte)(tamanhoCampos & 0xff);
         formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
         byte[] pduFinal = new byte[str.length + formato.length+data.length+hora.length];
         System.arraycopy(formato, 0, pduFinal, 0, formato.length);
         System.arraycopy(str, 0, pduFinal, formato.length, str.length);
         System.arraycopy(data, 0, pduFinal, formato.length+str.length, data.length);
-        System.arraycopy(data, 0, pduFinal, formato.length+str.length+data.length, hora.length);
+        System.arraycopy(hora, 0, pduFinal, formato.length+str.length+data.length, hora.length);
                 
+        return pduFinal;
+    }
+    
+    public static byte[] acceptChallengePDU(String name)
+    {
+        String alcunhaTer = name + '\0';
+        byte[] formato = formataPDU();
+        byte[] str = alcunhaTer.getBytes();
+        short tamanhoCampos = (short)(str.length);
+        
+        formato[4] = 9;
+        formato[5] = 1;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[str.length + formato.length];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+                       
         return pduFinal;
     }
     
