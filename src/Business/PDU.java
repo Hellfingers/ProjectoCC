@@ -191,7 +191,7 @@ public class PDU
         short tamanhoCampos = (short)(str.length+2);
         
         formato[4] = 11;
-        formato[5] = 1;
+        formato[5] = 3;
         formato[6] = (byte)(tamanhoCampos & 0xff);
         formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
         byte[] pduFinal = new byte[str.length + formato.length+2];
@@ -200,6 +200,26 @@ public class PDU
         System.arraycopy(str, 0, pduFinal, formato.length, str.length);
         pduFinal[formato.length+str.length]=nQuestao;
                                      
+        return pduFinal;
+    }
+    
+    public static byte[] retransmitPDU(String name,byte nQuestao, byte nBloco)
+    {
+        String alcunhaTer = name + '\0';
+        byte[] formato = formataPDU();
+        byte[] str = alcunhaTer.getBytes();
+        short tamanhoCampos = (short)(str.length+2);
+        
+        formato[4] = 12;
+        formato[5] = 3;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[str.length + formato.length+2];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+        pduFinal[formato.length+str.length]=nQuestao;
+        pduFinal[formato.length]=nBloco; 
+        
         return pduFinal;
     }
     
