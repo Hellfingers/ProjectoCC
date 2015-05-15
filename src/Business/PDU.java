@@ -87,6 +87,16 @@ public class PDU
         return pduFinal;
     }
     
+    public static byte[] logoutPDU()
+    {
+        byte[] formato=formataPDU();
+        formato[4] = 4;
+        formato[5] = 0;
+        formato[6] = 0;
+        formato[7] = 0;
+        return formato;
+    }
+    
     public static byte[] respostaErro(String erro, short label)
     {
         String erroTer = erro + '\0';
