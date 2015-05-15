@@ -37,7 +37,9 @@ public class Desafio {
     public String getCriador() {
         return this.criador;
     }
-
+    public String getNome(){
+        return this.nome;
+    }
     public HashMap<Integer, Pergunta> getPerguntas() {
         HashMap<Integer, Pergunta> res = new HashMap<>();
         for (Pergunta p : this.perguntas.values()) {

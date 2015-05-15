@@ -30,6 +30,17 @@ public class ComunicacaoServidor implements Comunicacao.ComunicacaoUDP
         desafios = new HashMap<String, Desafio>();
         desafiosDecorrer = new HashMap<String, Desafio>();
     }
+
+    public HashMap<String, Desafio> getDesafios() {
+        return this.desafios;
+    }
+    public HashMap<String,Desafio> getDesafiosDecorrer(){
+        return this.desafiosDecorrer;
+    }
+    public HashMap<String,Utilizador> getUsers(){
+        return this.users;
+    }
+    
     
     @Override
     public Boolean logInServer(String user, String password) throws IOException 

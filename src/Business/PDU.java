@@ -97,6 +97,65 @@ public class PDU
         return formato;
     }
     
+    public static byte[] quitPDU()
+    {
+    byte[] formato=formataPDU();
+        formato[4] = 5;
+        formato[5] = 0;
+        formato[6] = 0;
+        formato[7] = 0;
+        return formato;    
+    }
+    
+    public static byte[] endPDU()
+    {
+      byte[] formato=formataPDU();
+        formato[4] = 6;
+        formato[5] = 0;
+        formato[6] = 0;
+        formato[7] = 0;
+        return formato;   
+    }
+    
+    public static byte[] listChallengesPDU()
+    {
+        byte[] formato=formataPDU();
+        formato[4] = 7;
+        formato[5] = 0;
+        formato[6] = 0;
+        formato[7] = 0;
+        return formato;  
+    }
+    
+    public static byte[] makeChallengePDU(String name, byte[] data,byte[] hora)
+    {
+        String alcunhaTer = name + '\0';
+        byte[] formato = formataPDU();
+        byte[] str = alcunhaTer.getBytes();
+        short tamanhoCampos = (short)(str.length);
+        
+        formato[4] = 3;
+        formato[5] = 2;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[str.length + formato.length+data.length+hora.length];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+        System.arraycopy(data, 0, pduFinal, formato.length+str.length, data.length);
+        System.arraycopy(data, 0, pduFinal, formato.length+str.length+data.length, hora.length);
+                
+        return pduFinal;
+    }
+    
+    public static byte[] listRankingPDU()
+    {
+        byte[] formato=formataPDU();
+        formato[4] = 13;
+        formato[5] = 0;
+        formato[6] = 0;
+        formato[7] = 0;
+        return formato;  
+    }
     public static byte[] respostaErro(String erro, short label)
     {
         String erroTer = erro + '\0';
