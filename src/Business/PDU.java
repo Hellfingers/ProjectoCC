@@ -315,7 +315,7 @@ public class PDU
     {
         byte[] formato = formataPDU();
         
-        short tamanhoCampos = (short)(1);
+        short tamanhoCampos = (short)(2);
         
         formato[2] = (byte)(label & 0xff);
         formato[3] = (byte)((label >> 8) & 0xff);
@@ -323,7 +323,86 @@ public class PDU
         formato[5] = tipo;
         formato[6] = (byte)(tamanhoCampos & 0xff);
         formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[2 + formato.length];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        pduFinal[formato.length]=(byte)(res &  0xff);
+        pduFinal[formato.length+1]=(byte)((res >> 8) & 0xff);
+                
+        return pduFinal;
+    }
+    
+    public static byte[] infoTCPString(String nome, short label, byte tipo)
+    {
+        String nomeTer = nome + '\0';
+        byte[] formato = formataPDU();
+        byte[] str = nomeTer.getBytes();
+        short tamanhoCampos = (short)(str.length);
+        
+        formato[2] = (byte)(label & 0xff);
+        formato[3] = (byte)((label >> 8) & 0xff);
+        formato[4] = 14;
+        formato[5] = tipo;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[str.length + formato.length];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+                
+        return pduFinal;
+    }
+     
+    public static byte[] infoTCPByteArr(byte[] nome, short label, byte tipo)
+    {
+       
+        byte[] formato = formataPDU();
+        
+        short tamanhoCampos = (short)(nome.length);
+        
+        formato[2] = (byte)(label & 0xff);
+        formato[3] = (byte)((label >> 8) & 0xff);
+        formato[4] = 14;
+        formato[5] = tipo;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[nome.length + formato.length];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(nome, 0, pduFinal, formato.length, nome.length);
+                
+        return pduFinal;
+    }
+    
+    public static byte[] infoTCPByte(byte res, short label, byte tipo)
+    {
+        byte[] formato = formataPDU();
+        
+        short tamanhoCampos = (short)(1);
+        
+        formato[2] = (byte)(label & 0xff);
+        formato[3] = (byte)((label >> 8) & 0xff);
+        formato[4] = 14;
+        formato[5] = tipo;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
         byte[] pduFinal = new byte[1 + formato.length];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        pduFinal[formato.length]=res;
+                
+        return pduFinal;
+    }
+    
+    public static byte[] infoTCPByte(int res, short label, byte tipo)
+    {
+        byte[] formato = formataPDU();
+        
+        short tamanhoCampos = (short)(2);
+        
+        formato[2] = (byte)(label & 0xff);
+        formato[3] = (byte)((label >> 8) & 0xff);
+        formato[4] = 14;
+        formato[5] = tipo;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[2 + formato.length];
         System.arraycopy(formato, 0, pduFinal, 0, formato.length);
         pduFinal[formato.length]=(byte)(res &  0xff);
         pduFinal[formato.length+1]=(byte)((res >> 8) & 0xff);
