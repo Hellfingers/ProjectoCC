@@ -390,7 +390,7 @@ public class PDU
         return pduFinal;
     }
     
-    public static byte[] infoTCPByte(int res, short label, byte tipo)
+    public static byte[] infoTCP2Bytes(int res, short label, byte tipo)
     {
         byte[] formato = formataPDU();
         
