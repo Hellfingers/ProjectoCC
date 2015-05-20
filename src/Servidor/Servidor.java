@@ -71,9 +71,9 @@ public class Servidor {
             byte[] sendData;
             if(dadosServidor.logInServer(utilizador.toString(), password))
             {
-                sendData = PDU.respostaNome(utilizador.toString(), cabecalho[3]);
+                sendData = PDU.respostaString(utilizador.toString(), cabecalho[3],(byte) 1);
             }
-            else sendData = PDU.respostaErro("Username ou password erradas.", cabecalho[3]);
+            else sendData = PDU.respostaString("Username ou password erradas.", cabecalho[3],(byte) 255);
             
             InetAddress IPAddress = receivePacket.getAddress();
             int port = receivePacket.getPort();

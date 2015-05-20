@@ -87,6 +87,18 @@ public class PDU
         return pduFinal;
     }
     
+    public static byte[] helloPDU()
+    {
+        byte[] formato = formataPDU();
+        
+        formato[4] = 1;
+        formato[5] = 0;
+        formato[6] = 0;
+        formato[7] = 0;
+                
+        return formato;
+    }
+    
     public static byte[] respostaErro(String erro, short label)
     {
         String erroTer = erro + '\0';
@@ -107,7 +119,7 @@ public class PDU
         return pduFinal;
     }
     
-    public static byte[] respostaNome(String nome, short label)
+    public static byte[] respostaNome(String nome, short label, byte tipo)
     {
         String nomeTer = nome + '\0';
         byte[] formato = formataPDU();
@@ -118,6 +130,26 @@ public class PDU
         formato[3] = (byte)((label >> 8) & 0xff);
         formato[4] = 0;
         formato[5] = 1;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[str.length + formato.length];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+                
+        return pduFinal;
+    }
+    
+    public static byte[] respostaString(String string, short label, byte tipo)
+    {
+        String stringTer = string + '\0';
+        byte[] formato = formataPDU();
+        byte[] str = stringTer.getBytes();
+        short tamanhoCampos = (short)(str.length);
+        
+        formato[2] = (byte)(label & 0xff);
+        formato[3] = (byte)((label >> 8) & 0xff);
+        formato[4] = 0;
+        formato[5] = tipo;
         formato[6] = (byte)(tamanhoCampos & 0xff);
         formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
         byte[] pduFinal = new byte[str.length + formato.length];
