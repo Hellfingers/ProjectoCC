@@ -269,7 +269,7 @@ public class PDU
     {
         String stringTer = string + '\0';
         byte[] formato = formataPDU();
-        byte[] str = nomeTer.getBytes();
+        byte[] str = stringTer.getBytes();
         short tamanhoCampos = (short)(str.length);
         
         formato[2] = (byte)(label & 0xff);
