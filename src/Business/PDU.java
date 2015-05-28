@@ -5,7 +5,10 @@
  */
 package Business;
 
-import java.util.ArrayList;
+
+import java.io.FileInputStream;
+import org.apache.commons.io.IOUtils;
+import java.io.IOException;
 import java.util.Random;
 
 /**
@@ -14,6 +17,7 @@ import java.util.Random;
  */
 public class PDU 
 {
+    public static final int MAX_PACOTE_SIZE=48000-8;
     public PDU(){}
     
     public static short getShortValue(byte[] data) 
@@ -445,5 +449,26 @@ public class PDU
         }
                 
         return cabecalho;
+    }
+    
+    public static byte[][] getFile(String filename,int desc)throws IOException
+    {
+        int sizeTotal = 0, nPacotes;
+        byte[] resAux = IOUtils.toByteArray(new FileInputStream(filename));
+        sizeTotal = resAux.length;
+        
+        nPacotes = (sizeTotal / MAX_PACOTE_SIZE) + (sizeTotal % 2);
+        byte pacotes[][] = new byte[nPacotes][MAX_PACOTE_SIZE + 8];
+        for (int i = 0; i < nPacotes; i++) {
+            pacotes[i] = PDU.formataPDU();
+            pacotes[i][4] = 0;
+            pacotes[i][5] = 2;
+            pacotes[i][6] = (byte)((MAX_PACOTE_SIZE+1) &  0xff);
+            pacotes[i][7] = (byte)(((MAX_PACOTE_SIZE+1) >> 8) & 0xff);
+            pacotes[i][8] = (byte) i;
+            System.arraycopy(resAux, i*MAX_PACOTE_SIZE, pacotes[i], 9, MAX_PACOTE_SIZE);
+           
+        }
+        return pacotes;
     }
 }
