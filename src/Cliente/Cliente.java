@@ -12,7 +12,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import Business.Input;
 import Business.Menu;
+import Business.PDU;
 import Business.Utilizador;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.util.TreeSet;
 
 
 /**
@@ -23,6 +27,15 @@ public class Cliente {
 
     private static Menu menuLogin, menuJogo, menuDesafio;
 
+    public static void carregaFicheiro(String dest, TreeSet<byte[]>pacotes) throws IOException{
+        FileOutputStream fos=new FileOutputStream(dest+".mp3");
+        byte res[]=new byte[pacotes.size()*PDU.MAX_PACOTE_SIZE];
+        int contador=0;
+        for(byte[] pacote:pacotes)
+            System.arraycopy(pacote, 9, res, contador*PDU.MAX_PACOTE_SIZE, PDU.MAX_PACOTE_SIZE);
+        fos.write(res);
+            
+    }
     public static void CarregaMenus() 
     {
         String opcoesLogin[] = {"Registar Utilizador", "Fazer Login"};

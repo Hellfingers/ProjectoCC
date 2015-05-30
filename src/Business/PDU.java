@@ -451,13 +451,14 @@ public class PDU
         return cabecalho;
     }
     
-    public static byte[][] getFile(String filename,int desc)throws IOException
+    public static byte[][] FileToPacoteArray(String filename,int desc)throws IOException
     {
         int sizeTotal = 0, nPacotes;
         byte[] resAux = IOUtils.toByteArray(new FileInputStream(filename));
         sizeTotal = resAux.length;
         
-        nPacotes = (sizeTotal / MAX_PACOTE_SIZE) + (sizeTotal % 2);
+        nPacotes = (sizeTotal / MAX_PACOTE_SIZE);
+        if(sizeTotal%MAX_PACOTE_SIZE!=0) nPacotes++;
         byte pacotes[][] = new byte[nPacotes][MAX_PACOTE_SIZE + 8];
         for (int i = 0; i < nPacotes; i++) {
             pacotes[i] = PDU.formataPDU();
@@ -471,4 +472,6 @@ public class PDU
         }
         return pacotes;
     }
+    
+    
 }
