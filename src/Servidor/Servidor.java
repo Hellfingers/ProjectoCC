@@ -5,6 +5,9 @@
 package Servidor;
 
 import Business.Desafio;
+import Business.ExistingNameException;
+import Business.InvalidLoginException;
+import Business.NonexistingNameException;
 import Business.PDU;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -16,6 +19,7 @@ import java.util.Random;
 import java.util.HashSet;
 import java.util.logging.Level;
 import Business.Pergunta;
+import Business.Utilizador;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -33,7 +37,7 @@ public class Servidor {
     private static TreeSet<String> sourceMp3;
     private static HashSet<Pergunta> perguntas;
     private static HashMap<String,Desafio> desafios=new HashMap<>();
-    
+    private static HashMap<String,Utilizador> utilizadores=new HashMap<>();
     
     public static void carregaDB() throws FileNotFoundException{
         //Leitura do ficheiro de Imagens
@@ -69,7 +73,24 @@ public class Servidor {
         return System.getProperty("user.dir")+"\\srv\\"+filename;
     }
     
-    public static Desafio generateDesafio(String nome,String username){
+    public void registaUtilizador(String username,String auth) throws ExistingNameException{
+        if(Servidor.utilizadores.containsKey(username)) throw new ExistingNameException(username);
+        else Servidor.utilizadores.put(username, new Utilizador(username, auth));
+    }
+    
+    public Utilizador logIn(String username, String auth)throws NonexistingNameException,InvalidLoginException{
+        if(!(Servidor.utilizadores.containsKey(username))) throw new NonexistingNameException(username);
+        else if(!(Servidor.utilizadores.get(username).getPassword().equals(auth))) throw new InvalidLoginException(username);
+        else{
+            Utilizador ut=Servidor.utilizadores.get(username);
+            ut.setSessao(true);
+            return ut;
+        }
+    }
+    
+    public static Desafio generateDesafio(String nome,String username)throws ExistingNameException{
+        if(Servidor.desafios.containsKey(nome)) throw new ExistingNameException(nome);
+        else{
         Random rng=new Random();
         Pergunta p;
         int pos;
@@ -90,6 +111,8 @@ public class Servidor {
         Servidor.desafios.put(nome, des);
         return des;
     }
+}
+    
     public static Pergunta parseBlock(String line){
         StringTokenizer strtok=new StringTokenizer(line, "\n");
         Pergunta p=new Pergunta();
