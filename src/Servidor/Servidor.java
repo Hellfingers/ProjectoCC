@@ -8,6 +8,7 @@ import Business.Desafio;
 import Business.ExistingNameException;
 import Business.InvalidLoginException;
 import Business.NonexistingNameException;
+import Business.NotEnoughElementsException;
 import Business.PDU;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -88,8 +89,9 @@ public class Servidor {
         }
     }
     
-    public static Desafio generateDesafio(String nome,String username)throws ExistingNameException{
+    public static Desafio generateDesafio(String nome,String username)throws ExistingNameException,NotEnoughElementsException{
         if(Servidor.desafios.containsKey(nome)) throw new ExistingNameException(nome);
+        else if(Servidor.desafios.keySet().size()<10) throw new NotEnoughElementsException(Servidor.desafios.keySet().size());
         else{
         Random rng=new Random();
         Pergunta p;
