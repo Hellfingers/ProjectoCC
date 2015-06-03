@@ -5,19 +5,21 @@
 package Cliente;
 
 import Business.Menu;
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
+import java.net.MalformedURLException;
+import java.net.URL;
+import javazoom.jlgui.basicplayer.BasicPlayer;
+import javazoom.jlgui.basicplayer.BasicPlayerException;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import Business.Input;
 import Business.Menu;
 import Business.PDU;
+import Business.Picture;
 import Business.Utilizador;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.TreeSet;
-
 
 /**
  *
@@ -26,20 +28,21 @@ import java.util.TreeSet;
 public class Cliente {
 
     private static Menu menuLogin, menuJogo, menuDesafio;
-
-    public static void carregaFicheiro(String dest, TreeSet<byte[]>pacotes) throws IOException{
-        FileOutputStream fos=new FileOutputStream(dest+".mp3");
-        byte res[]=new byte[pacotes.size()*PDU.MAX_PACOTE_SIZE];
-        int contador=0;
-        for(byte[] pacote:pacotes)
-            System.arraycopy(pacote, 9, res, contador*PDU.MAX_PACOTE_SIZE, PDU.MAX_PACOTE_SIZE);
+    
+    public static void carregaFicheiro(String dest, TreeSet<byte[]> pacotes) throws IOException {
+        FileOutputStream fos = new FileOutputStream(dest + ".mp3");
+        byte res[] = new byte[pacotes.size() * PDU.MAX_PACOTE_SIZE];
+        int contador = 0;
+        for (byte[] pacote : pacotes) {
+            System.arraycopy(pacote, 9, res, contador * PDU.MAX_PACOTE_SIZE, PDU.MAX_PACOTE_SIZE);
+        }
         fos.write(res);
-            
+
     }
-    public static void CarregaMenus() 
-    {
+
+    public static void CarregaMenus() {
         String opcoesLogin[] = {"Registar Utilizador", "Fazer Login"};
-        String opcoesJogo[] = {"Criar Desafio", "Ver Classificações", "Ver Desafios", "Realizar Desafio", "Terminar Desafio", "Eliminar Desafio", "Terminar Sessão"};
+        String opcoesJogo[] = {"Criar Desafio", "Ver Classificações", "Ver Desafios", "Realizar Desafio", "Terminar Desafio", "Eliminar Desafio"};
         String opcoesDesafio[] = {"Responder a Pergunta", "Terminar Desafio", "Desistir de Desafio"};
 
         Cliente.menuLogin = new Menu(opcoesLogin);
@@ -47,17 +50,50 @@ public class Cliente {
         Cliente.menuDesafio = new Menu(opcoesDesafio);
     }
 
-    public static void main(String[] args) 
-    {
+    public static void playSong(String filename) {
+        String songName = filename;
+        String pathToMp3 = System.getProperty("user.dir") + "/media/music/" + songName;
+        BasicPlayer player = new BasicPlayer();
+        try {
+            player.open(new URL("file:///" + pathToMp3));
+            player.play();
+        } catch (BasicPlayerException | MalformedURLException e) {
+        }
+    }
+    
+    public static void showImage(String filename){
+        String imgName = filename;
+        String pathToImg = System.getProperty("user.dir") + "\\media\\images\\" + imgName;
+        Picture p=new Picture(pathToImg);
+        p.show();
+    }
+
+    public static void execMenuPrincipal() {
+        do {
+            Cliente.menuJogo.executa();
+            switch (Cliente.menuJogo.getOpcao()) {
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:
+                case 0:
+            }
+        } while (Cliente.menuJogo.getOpcao() != 0);
+    }
+
+    public static void main(String[] args) {
         ComunicacaoCliente comC;
         Utilizador ut;
         String input1, input2;
+        Cliente.playSong("01. World On Fire.mp3");
+        Cliente.showImage("cover.jpg");
         try {
             comC = new ComunicacaoCliente();
             Cliente.CarregaMenus();
             Cliente.menuLogin.executa();
-            switch (Cliente.menuLogin.getOpcao()) 
-            {
+            switch (Cliente.menuLogin.getOpcao()) {
                 case 1:
                     System.out.println("-------------REGISTO-----------");
                     System.out.println("Username: ");
@@ -78,11 +114,12 @@ public class Cliente {
                     break;
 
             }
-            if(Cliente.menuLogin.getOpcao()!=0) {
-                //executar menu de jogo e o caralho tb
-                
+            if (Cliente.menuLogin.getOpcao() != 0) {
+                Cliente.execMenuPrincipal();
+
             }
-        } catch ( IOException ex) {
+            else System.exit(0);
+        } catch (IOException ex) {
             Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
         }
         /*
