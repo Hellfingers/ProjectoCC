@@ -28,9 +28,11 @@ import java.util.TreeSet;
 public class Cliente {
 
     private static Menu menuLogin, menuJogo, menuDesafio;
+    private static BasicPlayer player;
+    private static Picture imagem;
     
-    public static void carregaFicheiro(String dest, TreeSet<byte[]> pacotes) throws IOException {
-        FileOutputStream fos = new FileOutputStream(dest + ".mp3");
+    public static void carregaFicheiroMusica(String dest, TreeSet<byte[]> pacotes) throws IOException {
+        FileOutputStream fos = new FileOutputStream(System.getProperty("user.dir") + "/media/music/"+dest + ".mp3");
         byte res[] = new byte[pacotes.size() * PDU.MAX_PACOTE_SIZE];
         int contador = 0;
         for (byte[] pacote : pacotes) {
@@ -39,7 +41,16 @@ public class Cliente {
         fos.write(res);
 
     }
-
+    
+    public static void carregaFicheiroImagem(String dest, TreeSet<byte[]> pacotes) throws IOException{
+        FileOutputStream fos = new FileOutputStream(System.getProperty("user.dir") + "/media/images/"+dest + ".jpg");
+        byte res[] = new byte[pacotes.size() * PDU.MAX_PACOTE_SIZE];
+        int contador = 0;
+        for (byte[] pacote : pacotes) {
+            System.arraycopy(pacote, 9, res, contador * PDU.MAX_PACOTE_SIZE, PDU.MAX_PACOTE_SIZE);
+        }
+        fos.write(res);
+    }
     public static void CarregaMenus() {
         String opcoesLogin[] = {"Registar Utilizador", "Fazer Login"};
         String opcoesJogo[] = {"Criar Desafio", "Ver Classificações", "Ver Desafios", "Realizar Desafio", "Terminar Desafio", "Eliminar Desafio"};
@@ -53,10 +64,10 @@ public class Cliente {
     public static void playSong(String filename) {
         String songName = filename;
         String pathToMp3 = System.getProperty("user.dir") + "/media/music/" + songName;
-        BasicPlayer player = new BasicPlayer();
+        Cliente.player = new BasicPlayer();
         try {
-            player.open(new URL("file:///" + pathToMp3));
-            player.play();
+            Cliente.player.open(new URL("file:///" + pathToMp3));
+            Cliente.player.play();
         } catch (BasicPlayerException | MalformedURLException e) {
         }
     }
@@ -64,10 +75,14 @@ public class Cliente {
     public static void showImage(String filename){
         String imgName = filename;
         String pathToImg = System.getProperty("user.dir") + "\\media\\images\\" + imgName;
-        Picture p=new Picture(pathToImg);
-        p.show();
+        Cliente.imagem=new Picture(pathToImg);
+        Cliente.imagem.show();
     }
 
+    public static void stopSong()throws BasicPlayerException{
+        Cliente.player.stop();
+    }
+    
     public static void execMenuPrincipal() {
         do {
             Cliente.menuJogo.executa();

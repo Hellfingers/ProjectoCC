@@ -5,7 +5,6 @@
  */
 package Business;
 
-
 /**
  *
  * @author User
@@ -94,8 +93,30 @@ public class Pergunta {
         this.musica = path;
     }
 
-    public Pergunta clone(){
+    public Pergunta clone() {
         return new Pergunta(this.getEnunciado(), this.getOpcao1(), this.getOpcao2(), this.getOpcao3(), this.getCorrecta(), this.getImagem(), this.getMusica());
     }
+
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        } else if (!(this.getClass().getSimpleName().equals(o.getClass().getSimpleName())) || o == null) {
+            return false;
+        } else {
+            Pergunta p = (Pergunta) o;
+            return ((this.correcta == p.getCorrecta()) && (this.enunciado.equals(p.getEnunciado())) && (this.opcao1.equals(p.getOpcao1())) && (this.opcao2.equals(p.getOpcao2())) && (this.opcao3.equals(p.getOpcao3())) && (this.musica.equals(p.getMusica())) && (this.imagem.equals(p.getImagem())));
+
+        }
+    }
     
+    public String toString(){
+        StringBuilder sb=new StringBuilder();
+        sb.append(this.musica+"\n");
+        sb.append(this.imagem+"\n");
+        sb.append(this.enunciado+"\n");
+        sb.append(this.opcao1+"\n");
+        sb.append(this.opcao2+"\n");
+        sb.append(this.opcao3+"\n");
+        return sb.toString();
+    }
 }
