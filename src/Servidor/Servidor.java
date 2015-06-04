@@ -75,23 +75,29 @@ public class Servidor {
     }
     
     public void registaUtilizador(String username,String auth) throws ExistingNameException{
-        if(Servidor.utilizadores.containsKey(username)) throw new ExistingNameException(username);
+        if(Servidor.utilizadores.containsKey(username)) {/*Envia erro de registo*/throw new ExistingNameException(username);}
         else Servidor.utilizadores.put(username, new Utilizador(username, auth));
     }
     
     public Utilizador logIn(String username, String auth)throws NonexistingNameException,InvalidLoginException{
-        if(!(Servidor.utilizadores.containsKey(username))) throw new NonexistingNameException(username);
-        else if(!(Servidor.utilizadores.get(username).getPassword().equals(auth))) throw new InvalidLoginException(username);
+        if(!(Servidor.utilizadores.containsKey(username))) {/*Envia erro de login*/throw new NonexistingNameException(username);}
+        else if(!(Servidor.utilizadores.get(username).getPassword().equals(auth))) {/*Envia erro de login*/throw new InvalidLoginException(username);}
         else{
             Utilizador ut=Servidor.utilizadores.get(username);
             ut.setSessao(true);
             return ut;
         }
     }
-    
-    public static Desafio generateDesafio(String nome,String username)throws ExistingNameException,NotEnoughElementsException{
-        if(Servidor.desafios.containsKey(nome)) throw new ExistingNameException(nome);
-        else if(Servidor.desafios.keySet().size()<10) throw new NotEnoughElementsException(Servidor.desafios.keySet().size());
+    public static Desafio getDesafio(String nome) throws NonexistingNameException {
+        if (!(Servidor.desafios.containsKey(nome))) {
+            /*Envia erro de desafio*/
+            throw new NonexistingNameException(nome);
+        }
+        else return Servidor.desafios.get(nome);
+    }
+    public Desafio generateDesafio(String nome,String username)throws ExistingNameException,NotEnoughElementsException{
+        if(Servidor.desafios.containsKey(nome)) {/*Envia erro de desafio*/throw new ExistingNameException(nome);}
+        else if(Servidor.desafios.keySet().size()<10) {/*Envia erro de desafio*/throw new NotEnoughElementsException(Servidor.desafios.keySet().size());}
         else{
         Random rng=new Random();
         Pergunta p;

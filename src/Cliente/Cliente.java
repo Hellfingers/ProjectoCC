@@ -4,6 +4,7 @@
  */
 package Cliente;
 
+import Business.Desafio;
 import Business.Menu;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -53,8 +54,8 @@ public class Cliente {
     }
     public static void CarregaMenus() {
         String opcoesLogin[] = {"Registar Utilizador", "Fazer Login"};
-        String opcoesJogo[] = {"Criar Desafio", "Ver Classificações", "Ver Desafios", "Realizar Desafio", "Terminar Desafio", "Eliminar Desafio"};
-        String opcoesDesafio[] = {"Responder a Pergunta", "Terminar Desafio", "Desistir de Desafio"};
+        String opcoesJogo[] = {"Criar Desafio", "Ver Classificações", "Listar Desafios","Realizar Desafio"};
+        String opcoesDesafio[] = {"Responder a Pergunta",  "Terminar Desafio", "Desistir de Desafio","Eliminar Desafio"};
 
         Cliente.menuLogin = new Menu(opcoesLogin);
         Cliente.menuJogo = new Menu(opcoesJogo);
@@ -83,17 +84,51 @@ public class Cliente {
         Cliente.player.stop();
     }
     
+    public static void execMenuDesafios(Desafio d){
+        do{
+            Cliente.menuDesafio.executa();
+            switch(Cliente.menuDesafio.getOpcao()){
+                case 1:{}
+                case 2:{}
+                case 3:{}
+                case 4:{}
+            }
+        }
+        while(Cliente.menuDesafio.getOpcao()!=0);
+    }
+    
     public static void execMenuPrincipal() {
+        String inputT;
+        Desafio d= new Desafio();
         do {
             Cliente.menuJogo.executa();
             switch (Cliente.menuJogo.getOpcao()) {
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 0:
+                case 1: {
+                    System.out.println("Insira o nome do desafio: ");
+                    inputT = Input.lerString();
+                    //ComC.envia(PDU.criaDesafioPDU(inputT));
+                    //Lê pacote da comunicação (Se OK siga para a frente, se erro manda mesg erro)
+                    //d=desafio criado
+                    Cliente.execMenuDesafios(d);
+                    break;
+                }
+                case 2: {/*Manda Classificações Espera resposta Apresenta Resposta*/
+
+                    break;
+                }
+                case 3: {/*Manda Listas de desafios espera resposta Apresenta Resposta*/;
+                    break;
+                }
+                case 4: {
+                    System.out.println("Insira o nome do desafio a realizar: ");
+                    inputT = Input.lerString(); 
+                    /*Envia msg de inicio de DESAFIO, ou erro, se erro avisa */
+                    /*d=Desafio a realizar*/
+                    Cliente.execMenuDesafios(d);
+                    break;
+                }
+
+                case 0:{System.out.println("ATÉ À VISTA Ó ARTISTA");/*Manda pacote Exit*/break;}
             }
         } while (Cliente.menuJogo.getOpcao() != 0);
     }
@@ -116,6 +151,8 @@ public class Cliente {
                     System.out.println("Password: ");
                     input2 = Input.lerString();
                     //registo aqui crl
+                    //Espera resposta
+                    //se nome(Ver msg erro) existir manda mensagem
                     break;
                 case 2:
                     System.out.println("------------LOGIN-------------");
@@ -124,6 +161,8 @@ public class Cliente {
                     System.out.println("Password: ");
                     input2 = Input.lerString();
                     comC.logInServer(input1, input2);
+                    //Espera Resposta 
+                    //Se houver erro manda mensagem.
                     break;
                 default:
                     break;
