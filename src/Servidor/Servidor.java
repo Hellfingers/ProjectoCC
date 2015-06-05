@@ -206,6 +206,35 @@ public class Servidor {
         }
 
     }
-    
+        /*public static void makeChallPDU(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor) {
+        StringBuilder utilizador = new StringBuilder();
+        String password;
+        Desafio d;
+        byte[] sendData = {};
+        int i = 8;
+
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            utilizador.append((char) pdu[i]);
+        }
+        i++;
+        byte[] pass = new byte[cabecalho[5] - (i - 8)];
+        System.arraycopy(pdu, i, pass, 0, cabecalho[5] - (i - 8));
+        password = new String(pass);
+        try {
+            d = Servidor.generateDesafio(utilizador.toString(), password);
+            
+        } catch (InvalidLoginException | NonexistingNameException exc) {
+            sendData = PDU.respostaString("Username ou password erradas", cabecalho[3], (byte) 255);
+        } finally {
+            try {
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+            } catch (IOException ioe) {
+                Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+            }
+        }*/
     }
 
