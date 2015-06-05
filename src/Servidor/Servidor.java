@@ -39,6 +39,7 @@ public class Servidor {
     private static HashSet<Pergunta> perguntas;
     private static HashMap<String,Desafio> desafios=new HashMap<>();
     private static HashMap<String,Utilizador> utilizadores=new HashMap<>();
+    private static HashMap<String,Desafio> desafiosTerminados=new HashMap<>();
     
     public static void carregaDB() throws FileNotFoundException{
         //Leitura do ficheiro de Imagens
@@ -74,12 +75,12 @@ public class Servidor {
         return System.getProperty("user.dir")+"\\srv\\"+filename;
     }
     
-    public void registaUtilizador(String username,String auth) throws ExistingNameException{
+    public static void registaUtilizador(String username,String nome,String auth) throws ExistingNameException{
         if(Servidor.utilizadores.containsKey(username)) {/*Envia erro de registo*/throw new ExistingNameException(username);}
-        else Servidor.utilizadores.put(username, new Utilizador(username, auth));
+        else Servidor.utilizadores.put(username, new Utilizador(username, nome,auth));
     }
     
-    public Utilizador logIn(String username, String auth)throws NonexistingNameException,InvalidLoginException{
+    public static Utilizador logIn(String username, String auth)throws NonexistingNameException,InvalidLoginException{
         if(!(Servidor.utilizadores.containsKey(username))) {/*Envia erro de login*/throw new NonexistingNameException(username);}
         else if(!(Servidor.utilizadores.get(username).getPassword().equals(auth))) {/*Envia erro de login*/throw new InvalidLoginException(username);}
         else{
@@ -88,6 +89,10 @@ public class Servidor {
             return ut;
         }
     }
+    
+    public static void logOut(String username){
+        Servidor.utilizadores.get(username).setSessao(false);
+    }
     public static Desafio getDesafio(String nome) throws NonexistingNameException {
         if (!(Servidor.desafios.containsKey(nome))) {
             /*Envia erro de desafio*/
@@ -95,7 +100,7 @@ public class Servidor {
         }
         else return Servidor.desafios.get(nome);
     }
-    public Desafio generateDesafio(String nome,String username)throws ExistingNameException,NotEnoughElementsException{
+    public static Desafio generateDesafio(String nome,String username)throws ExistingNameException,NotEnoughElementsException{
         if(Servidor.desafios.containsKey(nome)) {/*Envia erro de desafio*/throw new ExistingNameException(nome);}
         else if(Servidor.desafios.keySet().size()<10) {/*Envia erro de desafio*/throw new NotEnoughElementsException(Servidor.desafios.keySet().size());}
         else{
@@ -137,7 +142,8 @@ public class Servidor {
     public static void main(String[] args) 
     {        
         try{
-        Servidor.carregaDB();}
+        Servidor.carregaDB();
+            System.out.println("Ficheiros Carregados");}
         catch(FileNotFoundException fnf){
             System.err.println("Ficheiro não encontrado "+fnf.getMessage());
         }
@@ -172,35 +178,34 @@ public class Servidor {
     {
         StringBuilder utilizador = new StringBuilder();
         String password;
+        Utilizador ut;
+        byte[] sendData = {};
         int i = 8;
 
-        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) 
-        {
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
             utilizador.append((char) pdu[i]);
         }
-
         i++;
         byte[] pass = new byte[cabecalho[5] - (i - 8)];
         System.arraycopy(pdu, i, pass, 0, cabecalho[5] - (i - 8));
         password = new String(pass);
-
-        System.out.println("UTILI: " + utilizador.toString() + " PASSWORD: " + password);
-     
-        try 
-        { 
-            byte[] sendData;
-            if(dadosServidor.logInServer(utilizador.toString(), password))
-            {
-                sendData = PDU.respostaString(utilizador.toString(), cabecalho[3],(byte) 1);
+        try {
+            ut = Servidor.logIn(utilizador.toString(), password);
+            sendData = PDU.respostaLogin(ut.getNome(),ut.getScore());
+        } catch (InvalidLoginException | NonexistingNameException exc) {
+            sendData = PDU.respostaString("Username ou password erradas", cabecalho[3], (byte) 255);
+        } finally {
+            try {
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+            } catch (IOException ioe) {
+                Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
             }
-            else sendData = PDU.respostaString("Username ou password erradas.", cabecalho[3],(byte) 255);
-            
-            InetAddress IPAddress = receivePacket.getAddress();
-            int port = receivePacket.getPort();
-            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
-            serverSocket.send(sendPacket);
-        } 
-        catch (IOException ex){ Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex); }
-        
+        }
+
     }
-}
+    
+    }
+

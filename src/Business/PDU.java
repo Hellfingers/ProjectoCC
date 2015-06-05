@@ -249,6 +249,25 @@ public class PDU
         return formato;  
     }
 
+    public static byte[] respostaLogin(String nome, int pontos){
+        String stringTer = nome + '\0';
+        byte[] formato = formataPDU();
+        byte[] str = stringTer.getBytes();
+        short tamanhoCampos = (short)(str.length+1);
+        
+        formato[2] = 0;
+        formato[3] = 6;
+        formato[4] = 0;
+        formato[5] = 0;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[str.length + formato.length];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+        pduFinal[pduFinal.length-1]=(byte)pontos;
+        return pduFinal;
+    }
+    
     public static byte[] respostaErro(String erro, short label)
     {
         String erroTer = erro + '\0';
@@ -472,6 +491,7 @@ public class PDU
         }
         return pacotes;
     }
+    
     
     
 }
