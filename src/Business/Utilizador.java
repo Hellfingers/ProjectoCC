@@ -12,12 +12,14 @@ package Business;
 public class Utilizador {
 
     private String username;
+    private String nome;
     private String password;
     private boolean sessao;
     private int score;
 
-    public Utilizador(String username, String password) {
+    public Utilizador(String username,String nome ,String password) {
         this.username = username;
+        this.nome=nome;
         this.password = password;
         this.sessao = false;
         this.score = 0;
@@ -26,12 +28,14 @@ public class Utilizador {
     public Utilizador() {
         this.username = new String();
         this.password = new String();
+        this.nome=new String();
         this.sessao = false;
         this.score = 0;
     }
 
-    public Utilizador(String username, String password, int score) {
+    public Utilizador(String username,String nome,String password, int score) {
         this.username = username;
+        this.nome=nome;
         this.password = password;
         this.sessao = false;
         this.score = score;
@@ -39,6 +43,7 @@ public class Utilizador {
 
     public Utilizador(Utilizador ut) {
         this.username = ut.getUsername();
+        this.nome=ut.getNome();
         this.password = ut.getPassword();
         this.sessao = ut.getSessao();
         this.score = ut.getScore();
@@ -56,6 +61,18 @@ public class Utilizador {
 
     public void setScore(int score) {
         this.score = score;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public boolean isSessao() {
+        return sessao;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
     }
     
     public boolean getSessao() {
@@ -92,7 +109,7 @@ public class Utilizador {
             return false;
         }
         Utilizador ut = (Utilizador) obj;
-        return (this.username.equals(ut.getUsername()) && this.password.equals(ut.getPassword()) && this.score == ut.getScore());
+        return (this.username.equals(ut.getUsername())&&this.nome.equals(ut.getNome()) && this.password.equals(ut.getPassword()) && this.score == ut.getScore());
     }
 
     @Override
