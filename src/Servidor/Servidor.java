@@ -98,6 +98,7 @@ public class Servidor {
         else if(!(Servidor.desafios.get(nomeDes).getUtilizadores().contains(nomeUt))) throw new NonexistingNameException(nomeUt);
         else{
             if(Servidor.desafios.get(nomeDes).getPergunta(indPerg).isCerta(opcao)) Servidor.desafios.get(nomeDes).adicionaPont(nomeUt, 2);
+            else Servidor.desafios.get(nomeDes).adicionaPont(nomeUt, -1);
         }
     }
     
