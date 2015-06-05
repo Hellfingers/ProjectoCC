@@ -5,6 +5,7 @@
  */
 package Business;
 
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.TreeSet;
@@ -38,6 +39,7 @@ public class Desafio {
         this.utilizadores = new TreeSet<>();
         this.pontuacoes = new HashMap<>();
         this.datahora=new GregorianCalendar();
+        this.datahora.add(Calendar.MINUTE, 5);
     }
 
     public String getCriador() {
