@@ -102,6 +102,13 @@ public class Servidor {
         }
     }
     
+    public static void rageQuit(String nomeUt, String nomeDes)throws NonexistingNameException{
+        if(!Servidor.desafios.containsKey(nomeDes))throw new NonexistingNameException(nomeDes);
+        else if(!(Servidor.desafios.get(nomeDes).getUtilizadores().contains(nomeUt))) throw new NonexistingNameException(nomeUt);
+        else{
+            Servidor.desafios.get(nomeDes).eliminaUtilizador(nomeUt);
+        }
+    }
     
     public static Utilizador logIn(String username, String auth)throws NonexistingNameException,InvalidLoginException{
         if(!(Servidor.utilizadores.containsKey(username))) {/*Envia erro de login*/throw new NonexistingNameException(username);}

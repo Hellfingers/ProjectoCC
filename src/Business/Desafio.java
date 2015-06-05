@@ -113,4 +113,9 @@ public class Desafio {
         }
         return res;
     }
+    
+    public void eliminaUtilizador(String ut){
+        this.utilizadores.remove(ut);
+        this.pontuacoes.remove(ut);
+    }
 }
