@@ -79,6 +79,28 @@ public class Servidor {
         if(Servidor.utilizadores.containsKey(username)) {/*Envia erro de registo*/throw new ExistingNameException(username);}
         else Servidor.utilizadores.put(username, new Utilizador(username, nome,auth));
     }
+    public static void finalizaDesafio(String nomeDesafio)throws NonexistingNameException{
+        Integer pontos;
+        if(!(Servidor.desafios.containsKey(nomeDesafio))) throw new  NonexistingNameException(nomeDesafio);
+        else{
+            Desafio d=Servidor.desafios.get(nomeDesafio);
+            for(String st:d.getUtilizadores()){
+                pontos=d.getPontuacoes().get(st);
+                Servidor.utilizadores.get(st).addScore(pontos);
+            }
+            Servidor.utilizadores.get(d.getTopPontuacao().first().getUsername()).addScore(10);
+            Servidor.desafiosTerminados.put(nomeDesafio, d);
+        }
+    }
+    
+    public static void respondePerguntaDesafio(String nomeUt,String nomeDes,int indPerg,int opcao)throws NonexistingNameException{
+        if(!Servidor.desafios.containsKey(nomeDes))throw new NonexistingNameException(nomeDes);
+        else if(!(Servidor.desafios.get(nomeDes).getUtilizadores().contains(nomeUt))) throw new NonexistingNameException(nomeUt);
+        else{
+            if(Servidor.desafios.get(nomeDes).getPergunta(indPerg).isCerta(opcao)) Servidor.desafios.get(nomeDes).adicionaPont(nomeUt, 2);
+        }
+    }
+    
     
     public static Utilizador logIn(String username, String auth)throws NonexistingNameException,InvalidLoginException{
         if(!(Servidor.utilizadores.containsKey(username))) {/*Envia erro de login*/throw new NonexistingNameException(username);}

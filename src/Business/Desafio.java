@@ -42,6 +42,15 @@ public class Desafio {
         this.datahora.add(Calendar.MINUTE, 5);
     }
 
+    public Desafio(String nome, String criador, int dia, int mes, int ano, int horas, int minutos, int segundos) {
+        this.nome = nome;
+        this.criador = criador;
+        this.perguntas = new HashMap<>();
+        this.utilizadores = new TreeSet<>();
+        this.pontuacoes = new HashMap<>();
+        this.datahora=new GregorianCalendar(ano, mes-1, dia, horas, minutos, segundos);
+    }
+
     public String getCriador() {
         return this.criador;
     }
@@ -56,6 +65,14 @@ public class Desafio {
         return res;
     }
 
+    public HashMap<String, Integer> getPontuacoes() {
+        return pontuacoes;
+    }
+
+    public TreeSet<String> getUtilizadores() {
+        return new TreeSet<>(utilizadores);
+    }
+ 
     public GregorianCalendar getDatahora() {
         return datahora;
     }
@@ -68,13 +85,13 @@ public class Desafio {
         this.nome = nome;
     }
 
-    public void adicionaUtilizador(Utilizador ut){
-        this.utilizadores.add(ut.getUsername());
-        this.pontuacoes.put(ut.getNome(),0);
+    public void adicionaUtilizador(String ut){
+        this.utilizadores.add(ut);
+        this.pontuacoes.put(ut,0);
     }
     
-    public void adicionaPont(Utilizador ut,int pont){
-        Integer pontosAt=this.pontuacoes.get(ut.getUsername());
+    public void adicionaPont(String ut,int pont){
+        Integer pontosAt=this.pontuacoes.get(ut);
         pontosAt+=pont;
     }
 
@@ -89,5 +106,11 @@ public class Desafio {
     public Pergunta getPergunta(Integer i) {
         return this.perguntas.get(i).clone();
     }
-
+    public TreeSet<ParUsernamePontos> getTopPontuacao(){
+        TreeSet<ParUsernamePontos> res=new TreeSet<>(new ComparatorPUP());
+        for(String st: this.utilizadores){
+            res.add(new ParUsernamePontos(st, this.pontuacoes.get(st)));
+        }
+        return res;
+    }
 }

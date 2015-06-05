@@ -66,6 +66,10 @@ public class Utilizador {
     public String getNome() {
         return nome;
     }
+    
+    public void addScore(int score){
+        this.score+=score;
+    }
 
     public boolean isSessao() {
         return sessao;

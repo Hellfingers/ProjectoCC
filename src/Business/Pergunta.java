@@ -65,6 +65,9 @@ public class Pergunta {
         return this.musica;
     }
 
+    public boolean isCerta(int opcao){
+        return opcao==this.correcta;
+    }
     public void setCorrecta(int correcta) {
         this.correcta = correcta;
     }
