@@ -5,6 +5,7 @@
 package Cliente;
 
 import Business.PDU;
+import Business.ParUsernamePontos;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -43,8 +44,51 @@ public class ComunicacaoCliente implements Comunicacao.ComunicacaoUDP
         return true;
     }
 
-    public String getRespostaString() throws IOException
+    public Boolean registerServer(String user,String nome,String pass)throws IOException{
+        byte[] SecInfo = pass.getBytes();
+        byte[] sendData = PDU.registerPDU(nome, user, SecInfo);
+            
+        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, this.IPAddress, 9876);
+        this.clientSocket.send(sendPacket);
+        
+        return true;
+    }
+    
+    public ParUsernamePontos getRespostaLogin() throws IOException
     {
+        byte[] receiveData = new byte[1024];
+        byte[] pdu;
+        short lenghtCampos = 0;
+        int i;
+        StringBuilder str = new StringBuilder();
+
+        DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);                
+        this.clientSocket.receive(receivePacket);
+        pdu = receivePacket.getData();
+        byte[] tamanhoCampos = new byte[2];
+        tamanhoCampos[0] = pdu[6]; tamanhoCampos[1] = pdu[7];
+        lenghtCampos = PDU.getShortValue(tamanhoCampos);        
+        
+        
+        for (i = 8; i < lenghtCampos + 8 && ((char) pdu[i] != '\0'); i++) 
+        {
+            str.append((char) pdu[i]);
+        }
+        if((char)pdu[pdu.length-1]=='\0') return null;
+        else return new ParUsernamePontos(str.toString(), pdu[pdu.length-1]);
+    }
+    
+    public Boolean getPerguntaDesafioRequestPDU(String nomeDes,int nQuestao) throws IOException{
+        byte[] sendData = PDU.requestPergunta(nomeDes, nQuestao);
+            
+        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, this.IPAddress, 9876);
+        this.clientSocket.send(sendPacket);
+        
+        return true;
+    }
+
+    
+    public String getRespostaString() throws IOException{
         byte[] receiveData = new byte[1024];
         byte[] pdu;
         short lenghtCampos = 0;
@@ -56,7 +100,7 @@ public class ComunicacaoCliente implements Comunicacao.ComunicacaoUDP
         byte[] tamanhoCampos = new byte[2];
         tamanhoCampos[0] = pdu[6]; tamanhoCampos[1] = pdu[7];
         lenghtCampos = PDU.getShortValue(tamanhoCampos);        
-        System.out.println("Recevido: " + new String(receivePacket.getData()));
+        
         
         for (int i = 8; i < lenghtCampos + 8 && ((char) pdu[i] != '\0'); i++) 
         {
@@ -64,6 +108,22 @@ public class ComunicacaoCliente implements Comunicacao.ComunicacaoUDP
         }
         
         return str.toString();
+    }
+    
+    public Boolean getOK() throws IOException{
+        byte[] receiveData = new byte[1024];
+        byte[] pdu;
+        short lenghtCampos = 0;
+        StringBuilder str = new StringBuilder();
+
+        DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);                
+        this.clientSocket.receive(receivePacket);
+        pdu = receivePacket.getData();
+        byte[] tamanhoCampos = new byte[2];
+        tamanhoCampos[0] = pdu[6]; tamanhoCampos[1] = pdu[7];
+        lenghtCampos = PDU.getShortValue(tamanhoCampos);        
+        
+        return pdu[pdu.length-1]==0;
     }
     
     @Override

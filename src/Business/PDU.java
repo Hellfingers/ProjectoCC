@@ -71,7 +71,50 @@ public class PDU
                 
         return pduFinal;
     }
+    public static byte[] requestPergunta(String desafio, int nPergunta) {
+        String alcunhaTer = desafio + '\0';
+        byte[] formato = formataPDU();
+        byte[] str = alcunhaTer.getBytes();
+        short tamanhoCampos = (short) (str.length + 1);
+
+        formato[4] = 15;
+        formato[5] = 3;
+        formato[6] = (byte) (tamanhoCampos & 0xff);
+        formato[7] = (byte) ((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[str.length + formato.length + 1];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+        pduFinal[formato.length + str.length] = (byte) nPergunta;
+
+        return pduFinal;
+    }
     
+    public static byte[] respostaRqPerguntaPDU(Pergunta p){
+        String enunciadoter = p.getEnunciado() + '\0';
+        String op1= p.getOpcao1()+'\0';
+        String op2= p.getOpcao2()+'\0';
+        String op3= p.getOpcao3()+'\0';
+        byte[] formato = formataPDU();
+        byte[] str = enunciadoter.getBytes();
+        byte[] str1=op1.getBytes();
+        byte[] str2=op2.getBytes();
+        byte[] str3=op3.getBytes();
+        short tamanhoCampos = (short) (str.length+str1.length+str2.length+str3.length);
+
+        formato[4] = 15;
+        formato[5] = 3;
+        formato[6] = (byte) (tamanhoCampos & 0xff);
+        formato[7] = (byte) ((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[str.length + formato.length +str1.length+str2.length+str3.length];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+        System.arraycopy(str1,0, pduFinal, formato.length+ str.length, str1.length);
+        System.arraycopy(str2, 0, pduFinal, formato.length + str.length + str1.length, str2.length);
+        System.arraycopy(str3, 0, pduFinal, formato.length + str.length + str1.length + str2.length, str3.length);
+
+        return pduFinal;
+    }
+            
     public static byte[] loginPDU(String alcunha, byte[] SecInfo)
     {
         String alcunhaTer = alcunha + '\0';

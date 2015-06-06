@@ -79,19 +79,18 @@ public class Servidor {
         if(Servidor.utilizadores.containsKey(username)) {/*Envia erro de registo*/throw new ExistingNameException(username);}
         else Servidor.utilizadores.put(username, new Utilizador(username, nome,auth));
     }
-    public static void finalizaDesafio(String nomeDesafio)throws NonexistingNameException{
+    private static void finalizaDesafio(String nomeDesafio) throws NonexistingNameException {
         Integer pontos;
-        if(!(Servidor.desafios.containsKey(nomeDesafio))) throw new  NonexistingNameException(nomeDesafio);
-        else{
-            Desafio d=Servidor.desafios.get(nomeDesafio);
-            for(String st:d.getUtilizadores()){
-                pontos=d.getPontuacoes().get(st);
-                Servidor.utilizadores.get(st).addScore(pontos);
-            }
-            Servidor.utilizadores.get(d.getTopPontuacao().first().getUsername()).addScore(10);
-            Servidor.desafiosTerminados.put(nomeDesafio, d);
+
+        Desafio d = Servidor.desafios.get(nomeDesafio);
+        for (String st : d.getUtilizadores()) {
+            pontos = d.getPontuacoes().get(st);
+            Servidor.utilizadores.get(st).addScore(pontos);
         }
+        Servidor.utilizadores.get(d.getTopPontuacao().first().getUsername()).addScore(10);
+        Servidor.desafiosTerminados.put(nomeDesafio, d);
     }
+
     
     public static void respondePerguntaDesafio(String nomeUt,String nomeDes,int indPerg,int opcao)throws NonexistingNameException{
         if(!Servidor.desafios.containsKey(nomeDes))throw new NonexistingNameException(nomeDes);
@@ -110,6 +109,20 @@ public class Servidor {
         }
     }
     
+    public static void terminaDesafio(String nomeUt, String nomeDes) throws NonexistingNameException{
+        if(!(Servidor.desafios.containsKey(nomeDes))) throw new  NonexistingNameException(nomeDes);
+        else if(!(Servidor.desafios.get(nomeDes).getCriador().equals(nomeUt))) throw new NonexistingNameException(nomeUt);
+        else{
+            Servidor.finalizaDesafio(nomeDes);
+        }
+    }
+    
+    public static void eliminaDesafio(String nomeDes) throws NonexistingNameException{
+        if(!(Servidor.desafiosTerminados.containsKey(nomeDes))) throw new NonexistingNameException(nomeDes);
+        else{
+            Servidor.desafiosTerminados.remove(nomeDes);
+        }
+    }
     public static Utilizador logIn(String username, String auth)throws NonexistingNameException,InvalidLoginException{
         if(!(Servidor.utilizadores.containsKey(username))) {/*Envia erro de login*/throw new NonexistingNameException(username);}
         else if(!(Servidor.utilizadores.get(username).getPassword().equals(auth))) {/*Envia erro de login*/throw new InvalidLoginException(username);}
@@ -196,6 +209,7 @@ public class Servidor {
                 
                 switch(cabecalho[3])
                 {
+                    case 2: registerPDU(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor);
                     case 3: loginPDU(cabecalho, receivePacket.getData(), receivePacket, serverSocket, dadosServidor); break;
                 }
             }
@@ -223,7 +237,7 @@ public class Servidor {
             ut = Servidor.logIn(utilizador.toString(), password);
             sendData = PDU.respostaLogin(ut.getNome(),ut.getScore());
         } catch (InvalidLoginException | NonexistingNameException exc) {
-            sendData = PDU.respostaString("Username ou password erradas", cabecalho[3], (byte) 255);
+            sendData = PDU.respostaString(exc.getMessage(), cabecalho[3], (byte) 255);
         } finally {
             try {
                 InetAddress IPAddress = receivePacket.getAddress();
@@ -236,6 +250,45 @@ public class Servidor {
         }
 
     }
+    
+     private static void registerPDU(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor)
+    {
+        StringBuilder utilizador = new StringBuilder();
+        StringBuilder nome=new StringBuilder();
+        String password;
+        Utilizador ut;
+        byte[] sendData = {};
+        int i = 8;
+        for(;i<cabecalho[5]+8&&((char)pdu[i]!='\0');i++){
+            nome.append((char) pdu[i]);
+        }
+        i++;
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            utilizador.append((char) pdu[i]);
+        }
+        i++;
+        byte[] pass = new byte[cabecalho[5] - (i - 8)];
+        System.arraycopy(pdu, i, pass, 0, cabecalho[5] - (i - 8));
+        password = new String(pass);
+        try {
+            Servidor.registaUtilizador(utilizador.toString(), nome.toString(), password);
+            sendData = PDU.respostaByte((byte)0, cabecalho[3],(byte) 0);
+        } catch (ExistingNameException exc) {
+            sendData = PDU.respostaString(exc.getMessage(), cabecalho[3], (byte) 255);
+        } finally {
+            try {
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+            } catch (IOException ioe) {
+                Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+            }
+        }
+
+    }
+   
         /*public static void makeChallPDU(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
             DatagramSocket serverSocket, ComunicacaoServidor dadosServidor) {
         StringBuilder utilizador = new StringBuilder();
