@@ -45,4 +45,7 @@ public class ParUsernamePontos {
             return this.pontos==pup.getPontos()&&this.username.equals(pup.getUsername());
         }
     }
+    public String toString(){
+        return this.username+" "+this.pontos+" pontos";
+    }
 }

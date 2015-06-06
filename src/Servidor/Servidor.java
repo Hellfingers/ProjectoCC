@@ -10,6 +10,7 @@ import Business.InvalidLoginException;
 import Business.NonexistingNameException;
 import Business.NotEnoughElementsException;
 import Business.PDU;
+import Business.ParUsernamePontos;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -25,6 +26,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
@@ -41,6 +43,12 @@ public class Servidor {
     private static HashMap<String,Utilizador> utilizadores=new HashMap<>();
     private static HashMap<String,Desafio> desafiosTerminados=new HashMap<>();
     
+    public static TreeSet<ParUsernamePontos> getTopScorers(){
+        TreeSet<ParUsernamePontos> res=new TreeSet<>();
+        for(Utilizador ut:Servidor.utilizadores.values())
+            res.add(new ParUsernamePontos(ut.getNome(), ut.getScore()));
+        return res;    
+}
     public static void carregaDB() throws FileNotFoundException{
         //Leitura do ficheiro de Imagens
         Pergunta p;
@@ -75,6 +83,13 @@ public class Servidor {
         return System.getProperty("user.dir")+"\\srv\\"+filename;
     }
     
+    public static List<Desafio> listaDesafios(){
+        List<Desafio> res=new ArrayList<>();
+        for(Desafio d:Servidor.desafios.values())
+            res.add(d);
+        return res;
+    }
+    
     public static void registaUtilizador(String username,String nome,String auth) throws ExistingNameException{
         if(Servidor.utilizadores.containsKey(username)) {/*Envia erro de registo*/throw new ExistingNameException(username);}
         else Servidor.utilizadores.put(username, new Utilizador(username, nome,auth));
@@ -92,12 +107,12 @@ public class Servidor {
     }
 
     
-    public static void respondePerguntaDesafio(String nomeUt,String nomeDes,int indPerg,int opcao)throws NonexistingNameException{
+    public static int respondePerguntaDesafio(String nomeUt,String nomeDes,int indPerg,int opcao)throws NonexistingNameException{
         if(!Servidor.desafios.containsKey(nomeDes))throw new NonexistingNameException(nomeDes);
         else if(!(Servidor.desafios.get(nomeDes).getUtilizadores().contains(nomeUt))) throw new NonexistingNameException(nomeUt);
         else{
-            if(Servidor.desafios.get(nomeDes).getPergunta(indPerg).isCerta(opcao)) Servidor.desafios.get(nomeDes).adicionaPont(nomeUt, 2);
-            else Servidor.desafios.get(nomeDes).adicionaPont(nomeUt, -1);
+            if(Servidor.desafios.get(nomeDes).getPergunta(indPerg).isCerta(opcao)) {Servidor.desafios.get(nomeDes).adicionaPont(nomeUt, 2);return 2;}
+            else {Servidor.desafios.get(nomeDes).adicionaPont(nomeUt, -1);return -1;}
         }
     }
     
@@ -114,6 +129,14 @@ public class Servidor {
         else if(!(Servidor.desafios.get(nomeDes).getCriador().equals(nomeUt))) throw new NonexistingNameException(nomeUt);
         else{
             Servidor.finalizaDesafio(nomeDes);
+        }
+    }
+    
+    public static void adicionaUtilizadorDesafio(String nomeUt, String nomeDes) throws NonexistingNameException{
+        if(!(Servidor.desafios.containsKey(nomeDes))) throw new NonexistingNameException(nomeDes);
+        else if(!(Servidor.utilizadores.containsKey(nomeUt))) throw new NonexistingNameException(nomeUt);
+        else{
+            Servidor.desafios.get(nomeDes).adicionaUtilizador(nomeUt);
         }
     }
     
@@ -207,14 +230,322 @@ public class Servidor {
                 cabecalho = PDU.UndoPDU(receivePacket.getData());
                 System.out.println("RECEIVED: " + cabecalho[4]);
                 
-                switch(cabecalho[3])
+                switch(cabecalho[4])
                 {
-                    case 2: registerPDU(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor);
-                    case 3: loginPDU(cabecalho, receivePacket.getData(), receivePacket, serverSocket, dadosServidor); break;
+                    case 1: {
+                        okPDU(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor);
+                        break;
+                    }
+                    case 2:
+                        registerPDU(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor);
+                        break;
+                    case 3:
+                        loginPDU(cabecalho, receivePacket.getData(), receivePacket, serverSocket, dadosServidor);
+                        break;
+                    case 4: {
+                        logoutPDU(cabecalho, receivePacket.getData(), receivePacket, serverSocket, dadosServidor);
+                        break;
+                    }
+                    case 5:{
+                        quitPDU(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor); 
+                        break;
+                    }
+                    case 6:{
+                        endPDU(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor);
+                        break;
+                    }
+                    case 7:{
+                        listChallenges(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor); 
+                        break;
+                    }
+                    case 8:{
+                        makeChallenge(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor);
+                        break;
+                    }
+                    case 9:{
+                        acceptChallenge(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor);
+                        break;
+                    }
+                    case 10:{
+                        deleteChallenge(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor);
+                        break;
+                    }
+                    case 11:{
+                        answer(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor);
+                        break;
+                    }
+                    case 13:{
+                        listaRankings(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor);
+                        break;
+                    }    
                 }
             }
         } catch (IOException ex)
         { Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex); }
+    }
+    
+    private static void listChallenges(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor){
+        byte[] sendData = PDU.ReplistChallPDU(Servidor.listaDesafios());
+        try {
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+            } catch (IOException ioe) {
+                Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+            }
+        
+    }
+    
+    private static void deleteChallenge(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor){
+        StringBuilder desafio = new StringBuilder();
+        
+        
+        byte[] sendData = {};
+        int i = 8;
+        
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            desafio.append((char) pdu[i]);
+        }
+        i++;
+        
+        try {
+            Servidor.eliminaDesafio(desafio.toString());
+            sendData = PDU.respostaByte((byte) 0, cabecalho[3], (byte) 0);
+        } catch (NonexistingNameException exc) {
+            sendData = PDU.respostaString(exc.getMessage(), cabecalho[3], (byte) 255);
+        } finally {
+            try {
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+            } catch (IOException ioe) {
+                Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+            }
+        }
+    }
+    
+    public static void listaRankings(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor){
+        byte[] sendData;
+        sendData = PDU.respostaRanking(Servidor.getTopScorers());
+        try {
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+            } catch (IOException ioe) {
+                Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+            }
+    }
+    
+    private static void answer(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor){
+        StringBuilder desafio = new StringBuilder();
+        StringBuilder nomeut = new StringBuilder();
+        int pontosAm;
+        int indPerg;
+        int opc;
+        byte[] sendData = {};
+        int i = 8;
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            nomeut.append((char) pdu[i]);
+        }
+        i++;
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            desafio.append((char) pdu[i]);
+        }
+        i++;
+        indPerg=(int)pdu[pdu.length-1];
+        opc=(int) pdu[pdu.length-2];
+        try {
+            pontosAm=Servidor.respondePerguntaDesafio(nomeut.toString(), desafio.toString(),indPerg,opc);
+            sendData = PDU.respostaByte((byte) pontosAm, cabecalho[3], (byte) 0);
+        } catch (NonexistingNameException exc) {
+            sendData = PDU.respostaString(exc.getMessage(), cabecalho[3], (byte) 255);
+        } finally {
+            try {
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+            } catch (IOException ioe) {
+                Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+            }
+        }
+    }
+            
+    
+    private static void acceptChallenge(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor){
+        StringBuilder desafio = new StringBuilder();
+        StringBuilder nomeut = new StringBuilder();
+
+        byte[] sendData = {};
+        int i = 8;
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            nomeut.append((char) pdu[i]);
+        }
+        i++;
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            desafio.append((char) pdu[i]);
+        }
+        i++;
+
+        try {
+            Servidor.adicionaUtilizadorDesafio(nomeut.toString(), desafio.toString());
+            sendData = PDU.respostaByte((byte) 0, cabecalho[3], (byte) 0);
+        } catch (NonexistingNameException exc) {
+            sendData = PDU.respostaString(exc.getMessage(), cabecalho[3], (byte) 255);
+        } finally {
+            try {
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+            } catch (IOException ioe) {
+                Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+            }
+        }
+    }
+    
+    private static void makeChallenge(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor){
+        StringBuilder desafio = new StringBuilder();
+        StringBuilder nomeut = new StringBuilder();
+
+        byte[] sendData = {};
+        int i = 8;
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            nomeut.append((char) pdu[i]);
+        }
+        i++;
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            desafio.append((char) pdu[i]);
+        }
+        i++;
+
+        try {
+            Servidor.generateDesafio(desafio.toString(), nomeut.toString());
+            sendData = PDU.respostaByte((byte) 0, cabecalho[3], (byte) 0);
+        } catch (ExistingNameException | NotEnoughElementsException exc) {
+            sendData = PDU.respostaString(exc.getMessage(), cabecalho[3], (byte) 255);
+        } finally {
+            try {
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+            } catch (IOException ioe) {
+                Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+            }
+        }
+    }
+    
+    private static void quitPDU(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor){
+        StringBuilder desafio = new StringBuilder();
+        StringBuilder nomeut = new StringBuilder();
+
+        byte[] sendData = {};
+        int i = 8;
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            nomeut.append((char) pdu[i]);
+        }
+        i++;
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            desafio.append((char) pdu[i]);
+        }
+        i++;
+
+        try {
+            Servidor.rageQuit(nomeut.toString(), desafio.toString());
+            sendData = PDU.respostaByte((byte) 0, cabecalho[3], (byte) 0);
+        } catch (NonexistingNameException exc) {
+            sendData = PDU.respostaString(exc.getMessage(), cabecalho[3], (byte) 255);
+        } finally {
+            try {
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+            } catch (IOException ioe) {
+                Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+            }
+    }
+    }
+    
+    private static void endPDU(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor){
+        StringBuilder desafio = new StringBuilder();
+        StringBuilder nomeut = new StringBuilder();
+
+        byte[] sendData = {};
+        int i = 8;
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            nomeut.append((char) pdu[i]);
+        }
+        i++;
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            desafio.append((char) pdu[i]);
+        }
+        i++;
+
+        try {
+            Servidor.terminaDesafio(nomeut.toString(), desafio.toString());
+            sendData = PDU.respostaByte((byte) 0, cabecalho[3], (byte) 0);
+        } catch (NonexistingNameException exc) {
+            sendData = PDU.respostaString(exc.getMessage(), cabecalho[3], (byte) 255);
+        } finally {
+            try {
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+            } catch (IOException ioe) {
+                Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+            }
+    }
+    }
+    
+    private static void logoutPDU(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor){
+        StringBuilder utilizador = new StringBuilder();
+
+        byte[] sendData = {};
+        int i = 8;
+
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            utilizador.append((char) pdu[i]);
+        }
+        i++;
+        Servidor.logOut(utilizador.toString());
+        sendData= PDU.respostaByte((byte)0, cabecalho[3], (byte) 0);
+        try {
+            InetAddress IPAddress = receivePacket.getAddress();
+            int port = receivePacket.getPort();
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+            serverSocket.send(sendPacket);
+        } catch (IOException ioe) {
+            Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+        }
+    }
+    
+    private static void okPDU(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor) {
+        byte[] sendData = {};
+        sendData = PDU.respostaByte((byte) 0, cabecalho[3], (byte) 0);
+        try {
+            InetAddress IPAddress = receivePacket.getAddress();
+            int port = receivePacket.getPort();
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+            serverSocket.send(sendPacket);
+        } catch (IOException ioe) {
+            Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+        }
     }
     
     private static void loginPDU(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,

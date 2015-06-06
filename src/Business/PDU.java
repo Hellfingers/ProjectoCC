@@ -9,7 +9,10 @@ package Business;
 import java.io.FileInputStream;
 import org.apache.commons.io.IOUtils;
 import java.io.IOException;
+import java.util.Calendar;
+import java.util.List;
 import java.util.Random;
+import java.util.TreeSet;
 
 /**
  *
@@ -53,6 +56,61 @@ public class PDU
         return pdu;
     }
     
+    public static byte[] quitChallPDU(String username, String desafio){
+        String infoRegisto = username + '\0' + desafio + '\0';
+        byte[] formato = formataPDU();
+        byte[] str = infoRegisto.getBytes();
+        short tamanhoCampos = (short)(str.length);
+        
+        formato[4] = 5;
+        formato[5] = 2;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[1024];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+        
+                
+        return pduFinal;
+    }
+    
+    public static byte[] ReplistChallPDU(List<Desafio> lista){
+        String infoRegisto=new String();
+        for(Desafio d: lista)
+            infoRegisto=infoRegisto+d.getNome()+'\0';
+        byte[] formato = formataPDU();
+        byte[] str = infoRegisto.getBytes();
+        short tamanhoCampos = (short)(str.length);
+        
+        formato[4] = 0;
+        formato[5] = (byte)lista.size();
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[1024];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+        
+                
+        return pduFinal;  
+    }
+    
+    public static byte[] endChallPDU(String username, String desafio){
+        String infoRegisto = username + '\0' + desafio + '\0';
+        byte[] formato = formataPDU();
+        byte[] str = infoRegisto.getBytes();
+        short tamanhoCampos = (short)(str.length);
+        
+        formato[4] = 6;
+        formato[5] = 2;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[1024];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+        
+                
+        return pduFinal;
+    }
     public static byte[] registerPDU(String nome, String alcunha, byte[] SecInfo)
     {
         String infoRegisto = nome + '\0' + alcunha + '\0';
@@ -78,7 +136,7 @@ public class PDU
         short tamanhoCampos = (short) (str.length + 1);
 
         formato[4] = 15;
-        formato[5] = 3;
+        formato[5] = 2;
         formato[6] = (byte) (tamanhoCampos & 0xff);
         formato[7] = (byte) ((tamanhoCampos >> 8) & 0xff);
         byte[] pduFinal = new byte[str.length + formato.length + 1];
@@ -87,6 +145,23 @@ public class PDU
         pduFinal[formato.length + str.length] = (byte) nPergunta;
 
         return pduFinal;
+    }
+    
+    public static byte[] respostaRanking(TreeSet<ParUsernamePontos> treeSet){
+        String username=new String();
+        for(ParUsernamePontos pup:treeSet)
+            username=username+pup.getUsername()+'\0'+pup.getPontos()+'\0';
+        byte[] formato = formataPDU();
+        byte[] str=username.getBytes();
+        short tamanhoCampos = (short) (str.length);
+        
+        formato[4] = 0;
+        formato[5] = (byte)(treeSet.size()*2);
+        formato[6] = (byte) (tamanhoCampos & 0xff);
+        formato[7] = (byte) ((tamanhoCampos >> 8) & 0xff);
+                
+        return formato;
+        
     }
     
     public static byte[] respostaRqPerguntaPDU(Pergunta p){
@@ -186,6 +261,23 @@ public class PDU
         return formato;  
     }
     
+    public static byte[] makeChallPDU(String userN,String desN){
+        String alcunhaTer = userN + '\0'+desN+'\0';
+        byte[] formato = formataPDU();
+        byte[] str = alcunhaTer.getBytes();
+        short tamanhoCampos = (short)(str.length);
+        
+        formato[4] = 8;
+        formato[5] = 3;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[str.length + formato.length];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+                
+        return pduFinal;
+    }
+    
     public static byte[] makeChallengePDU(String name, byte[] data,byte[] hora)
     {
         String alcunhaTer = name + '\0';
@@ -206,9 +298,9 @@ public class PDU
         return pduFinal;
     }
     
-    public static byte[] acceptChallengePDU(String name)
+    public static byte[] acceptChallengePDU(String username,String name)
     {
-        String alcunhaTer = name + '\0';
+        String alcunhaTer = username+'\0'+name + '\0';
         byte[] formato = formataPDU();
         byte[] str = alcunhaTer.getBytes();
         short tamanhoCampos = (short)(str.length);
@@ -242,9 +334,9 @@ public class PDU
         return pduFinal;
     }
     
-    public static byte[] answerPDU(byte escolha,String name,byte nQuestao)
+    public static byte[] answerPDU(String desafio,byte escolha,String userName,byte nQuestao)
     {
-        String alcunhaTer = name + '\0';
+        String alcunhaTer = userName + '\0'+desafio+'\0';
         byte[] formato = formataPDU();
         byte[] str = alcunhaTer.getBytes();
         short tamanhoCampos = (short)(str.length+2);
@@ -255,9 +347,11 @@ public class PDU
         formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
         byte[] pduFinal = new byte[str.length + formato.length+2];
         System.arraycopy(formato, 0, pduFinal, 0, formato.length);
-        pduFinal[formato.length]=escolha;
         System.arraycopy(str, 0, pduFinal, formato.length, str.length);
-        pduFinal[formato.length+str.length]=nQuestao;
+        pduFinal[formato.length+str.length]=escolha;
+        
+        
+        pduFinal[formato.length+str.length+1]=nQuestao;
                                      
         return pduFinal;
     }

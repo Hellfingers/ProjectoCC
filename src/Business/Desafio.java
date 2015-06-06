@@ -118,4 +118,6 @@ public class Desafio {
         this.utilizadores.remove(ut);
         this.pontuacoes.remove(ut);
     }
+
+            
 }
