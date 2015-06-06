@@ -4,6 +4,7 @@
  */
 package Servidor;
 
+import Business.ComparatorPUP;
 import Business.Desafio;
 import Business.ExistingNameException;
 import Business.InvalidLoginException;
@@ -44,7 +45,7 @@ public class Servidor {
     private static HashMap<String,Desafio> desafiosTerminados=new HashMap<>();
     
     public static TreeSet<ParUsernamePontos> getTopScorers(){
-        TreeSet<ParUsernamePontos> res=new TreeSet<>();
+        TreeSet<ParUsernamePontos> res=new TreeSet<>(new ComparatorPUP());
         for(Utilizador ut:Servidor.utilizadores.values())
             res.add(new ParUsernamePontos(ut.getNome(), ut.getScore()));
         return res;    
@@ -205,6 +206,10 @@ public class Servidor {
         return p;
         
     }
+    
+    public static Pergunta getPerguntaInd(String nomeDes,int index){
+        return Servidor.desafios.get(nomeDes).getPergunta(index);
+    }
     public static void main(String[] args) 
     {        
         try{
@@ -278,12 +283,52 @@ public class Servidor {
                         listaRankings(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor);
                         break;
                     }    
+                    case 15:{
+                        getPerguntaDesafio(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor);
+                        break;
+                    }
+                    case 16:{
+                        
+                    }
+                    case 17:{
+                        
+                    }
                 }
             }
         } catch (IOException ex)
         { Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex); }
     }
     
+    private static void getMusicaDesafio(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor){
+        
+    }
+    
+    private static void getPerguntaDesafio(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor){
+        StringBuilder desafio = new StringBuilder();
+        int indPerg;
+     
+        byte[] sendData = {};
+        int i=8;
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            desafio.append((char) pdu[i]);
+        }
+        i++;
+        indPerg=(int)pdu[pdu.length-1];
+  
+            Pergunta p=Servidor.getPerguntaInd(desafio.toString(), indPerg);
+            sendData = PDU.respostaRqPerguntaPDU(p, cabecalho);
+          try {
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+            } catch (IOException ioe) {
+                Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+            }
+        }
+
     private static void listChallenges(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
             DatagramSocket serverSocket, ComunicacaoServidor dadosServidor){
         byte[] sendData = PDU.ReplistChallPDU(Servidor.listaDesafios());
@@ -619,6 +664,10 @@ public class Servidor {
         }
 
     }
+     
+     private static void sendMusica(){
+     
+     }
    
         /*public static void makeChallPDU(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
             DatagramSocket serverSocket, ComunicacaoServidor dadosServidor) {

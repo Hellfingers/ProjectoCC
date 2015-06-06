@@ -164,7 +164,44 @@ public class PDU
         
     }
     
-    public static byte[] respostaRqPerguntaPDU(Pergunta p){
+    public static byte[] getMusicaPDU(String nomeDesafio,byte index){
+        String infoRegisto = nomeDesafio + '\0';
+        byte[] formato = formataPDU();
+        byte[] str = infoRegisto.getBytes();
+        short tamanhoCampos = (short)(str.length+1);
+        
+        formato[4] = 16;
+        formato[5] = 2;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[1024];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+        pduFinal[pduFinal.length-1]=index;
+        
+                
+        return pduFinal;
+    }
+    
+    public static byte[] getImagemPDU(String nomeDesafio,byte index){
+        String infoRegisto = nomeDesafio + '\0';
+        byte[] formato = formataPDU();
+        byte[] str = infoRegisto.getBytes();
+        short tamanhoCampos = (short)(str.length+1);
+        
+        formato[4] = 17;
+        formato[5] = 2;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[1024];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+        pduFinal[pduFinal.length-1]=index;
+        
+                
+        return pduFinal;
+    }
+    public static byte[] respostaRqPerguntaPDU(Pergunta p,short[] label){
         String enunciadoter = p.getEnunciado() + '\0';
         String op1= p.getOpcao1()+'\0';
         String op2= p.getOpcao2()+'\0';
@@ -175,8 +212,9 @@ public class PDU
         byte[] str2=op2.getBytes();
         byte[] str3=op3.getBytes();
         short tamanhoCampos = (short) (str.length+str1.length+str2.length+str3.length);
-
-        formato[4] = 15;
+        formato[2] = (byte)label[0];
+        formato[3] = (byte)label[1];
+        formato[4] = 0;
         formato[5] = 3;
         formato[6] = (byte) (tamanhoCampos & 0xff);
         formato[7] = (byte) ((tamanhoCampos >> 8) & 0xff);

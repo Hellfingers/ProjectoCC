@@ -105,6 +105,10 @@ public class Cliente {
             for (currentQ = 1; currentQ <= 10; currentQ++) {
                 Cliente.comC.getPerguntaDesafioRequestPDU(d, currentQ);
                 
+                Cliente.comC.getMusica(d,currentQ);
+                
+                Cliente.comC.getImagem(d,currentQ);
+                Cliente.menuInGame=new Menu(new String[]{});
             }
         }
         catch(IOException ioe){System.err.println(ioe.getMessage());}

@@ -80,13 +80,35 @@ public class ComunicacaoCliente implements Comunicacao.ComunicacaoUDP
     
     public Boolean getPerguntaDesafioRequestPDU(String nomeDes,int nQuestao) throws IOException{
         byte[] sendData = PDU.requestPergunta(nomeDes, nQuestao);
-            
         DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, this.IPAddress, 9876);
         this.clientSocket.send(sendPacket);
         
         return true;
     }
 
+    public Boolean respondePerguntaPDU(String userName,String nomeDes, int nQuestao, int opcao) throws IOException{
+        byte[] sendData = PDU.answerPDU(nomeDes, (byte)opcao, userName, (byte)nQuestao);
+        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, this.IPAddress, 9876);
+        this.clientSocket.send(sendPacket);
+        
+        return true;
+    }
+    
+    public boolean getMusica(String d, int index)throws IOException{
+        byte[] sendData = PDU.getMusicaPDU(d,(byte)index);
+        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, this.IPAddress, 9876);
+        this.clientSocket.send(sendPacket);
+        
+        return true;
+    }
+    
+    public boolean getImagem(String d,int index)throws IOException{
+        byte[] sendData = PDU.getImagemPDU(d,(byte)index);
+        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, this.IPAddress, 9876);
+        this.clientSocket.send(sendPacket);
+        
+        return true;
+    }
     
     public String getRespostaString() throws IOException{
         byte[] receiveData = new byte[1024];
@@ -125,6 +147,16 @@ public class ComunicacaoCliente implements Comunicacao.ComunicacaoUDP
         
         return pdu[pdu.length-1]==0;
     }
+    
+    public boolean sendHello()throws IOException{
+        byte[] sendData;
+        sendData=PDU.helloPDU();
+        DatagramPacket sendPacket=new DatagramPacket(sendData, sendData.length);
+        this.clientSocket.send(sendPacket);
+        return true;
+    }
+    
+    
     
     @Override
     public String criarDesafio(String desaf) throws IOException
