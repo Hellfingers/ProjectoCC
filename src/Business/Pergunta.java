@@ -27,6 +27,22 @@ public class Pergunta {
         this.musica = new String();
     }
 
+     public Pergunta(String enunciado, String opcao1, String opcao2, String opcao3, String pathImagem, String pathMusica) {
+        this.enunciado = enunciado;
+        this.opcao1 = opcao1;
+        this.opcao2 = opcao2;
+        this.opcao3 = opcao3;
+        this.imagem = pathImagem;
+        this.musica = pathMusica;
+    }
+    
+     public Pergunta(String enunciado, String opcao1, String opcao2, String opcao3) {
+        this.enunciado = enunciado;
+        this.opcao1 = opcao1;
+        this.opcao2 = opcao2;
+        this.opcao3 = opcao3;  
+     }
+     
     public Pergunta(String enunciado, String opcao1, String opcao2, String opcao3, int correcta, String pathImagem, String pathMusica) {
         this.enunciado = enunciado;
         this.opcao1 = opcao1;

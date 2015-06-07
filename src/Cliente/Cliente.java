@@ -17,6 +17,7 @@ import Business.Input;
 import Business.Menu;
 import Business.PDU;
 import Business.ParUsernamePontos;
+import Business.Pergunta;
 import Business.Picture;
 import Business.Utilizador;
 import java.io.FileNotFoundException;
@@ -101,17 +102,34 @@ public class Cliente {
     public static void execMenuIngame(Utilizador ut, String d) {
         int currentQ;
         int opcao;
+        Pergunta p;
         try {
             for (currentQ = 1; currentQ <= 10; currentQ++) {
                 Cliente.comC.getPerguntaDesafioRequestPDU(d, currentQ);
-                
+                p=Cliente.comC.getPergunta();
                 Cliente.comC.getMusica(d,currentQ);
-                
+                Cliente.carregaFicheiroMusica("0000"+currentQ, Cliente.comC.getPacotesMusica());
                 Cliente.comC.getImagem(d,currentQ);
-                Cliente.menuInGame=new Menu(new String[]{});
+                Cliente.carregaFicheiroImagem("0000"+currentQ, Cliente.comC.getPacotesImagem());
+                System.out.println(p.getEnunciado());
+                Cliente.menuInGame=new Menu(new String[]{p.getOpcao1(),p.getOpcao2(),p.getOpcao3()});
+                Cliente.playSong("0000"+currentQ+".mp3");
+                Cliente.showImage("0000"+currentQ+".jpg");
+                switch(Cliente.menuInGame.getOpcao()){
+                    case 0:{
+                        Cliente.comC.desistirDesafio(ut.getUsername(), d);
+                        break;
+                    }
+                    default:{
+                        Cliente.comC.respondePerguntaPDU(ut.getUsername(),d,currentQ,Cliente.menuInGame.getOpcao());
+                        break;
+                    }
+                }
+                Cliente.stopSong();
+                if(Cliente.menuInGame.getOpcao()==0) break;
             }
         }
-        catch(IOException ioe){System.err.println(ioe.getMessage());}
+        catch(IOException|BasicPlayerException ioe){System.err.println(ioe.getMessage());}
     }
     
     public static void execMenuPrincipal(Utilizador ut) {

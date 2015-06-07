@@ -9,6 +9,6 @@ package Comunicacao;
  *
  * @author Jose
  */
-public class ComunicacaoTPC {
+public interface ComunicacaoTCP {
     
 }

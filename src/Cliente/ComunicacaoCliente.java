@@ -4,8 +4,11 @@
  */
 package Cliente;
 
+import Business.ComparatorPUP;
 import Business.PDU;
+import Business.PDUComparator;
 import Business.ParUsernamePontos;
+import Business.Pergunta;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,6 +17,8 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.Arrays;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -110,6 +115,14 @@ public class ComunicacaoCliente implements Comunicacao.ComunicacaoUDP
         return true;
     }
     
+    public boolean desistirDesafio(String username, String desafio) throws IOException{
+        byte[] sendData = PDU.quitChallPDU(username, desafio);
+        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, this.IPAddress, 9876);
+        this.clientSocket.send(sendPacket);
+        
+        return true;
+    }
+    
     public String getRespostaString() throws IOException{
         byte[] receiveData = new byte[1024];
         byte[] pdu;
@@ -156,7 +169,59 @@ public class ComunicacaoCliente implements Comunicacao.ComunicacaoUDP
         return true;
     }
     
+    public TreeSet<byte[]> getPacotesMusica()throws IOException{
+        byte[] receiveData = new byte[1024];
+        byte[] pdu;
+        short lenghtCampos = 0;
+        TreeSet<byte[]> res= new TreeSet<>(new PDUComparator());
+        DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);                
+        this.clientSocket.receive(receivePacket);
+        pdu = receivePacket.getData();
+        byte[] tamanhoCampos = new byte[2];
+        tamanhoCampos[0] = pdu[6]; tamanhoCampos[1] = pdu[7];
+        lenghtCampos = PDU.getShortValue(tamanhoCampos);      
+        if(!(Arrays.equals(pdu, PDU.respostaByte((byte)0, (byte)0))))
+            res.add(pdu);
+        while(!(Arrays.equals(pdu, PDU.respostaByte((byte)0,(byte) 0)))){
+            this.clientSocket.receive(receivePacket);
+            pdu = receivePacket.getData();
+            tamanhoCampos = new byte[2];
+            tamanhoCampos[0] = pdu[6];
+            tamanhoCampos[1] = pdu[7];
+            lenghtCampos = PDU.getShortValue(tamanhoCampos);
+            if(!(Arrays.equals(pdu, PDU.respostaByte((byte)0, (byte)0))))
+                res.add(pdu);
+        }
+        
+        return res;
+    }
     
+    public TreeSet<byte[]> getPacotesImagem()throws IOException{
+        byte[] receiveData = new byte[1024];
+        byte[] pdu;
+        short lenghtCampos = 0;
+        TreeSet<byte[]> res= new TreeSet<>(new PDUComparator());
+        DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);                
+        this.clientSocket.receive(receivePacket);
+        pdu = receivePacket.getData();
+        byte[] tamanhoCampos = new byte[2];
+        tamanhoCampos[0] = pdu[6]; tamanhoCampos[1] = pdu[7];
+        lenghtCampos = PDU.getShortValue(tamanhoCampos);      
+        if(!(Arrays.equals(pdu, PDU.respostaByte((byte)0, (byte)0))))
+            res.add(pdu);
+        while(!(Arrays.equals(pdu, PDU.respostaByte((byte)0,(byte) 0)))){
+            this.clientSocket.receive(receivePacket);
+            pdu = receivePacket.getData();
+            tamanhoCampos = new byte[2];
+            tamanhoCampos[0] = pdu[6];
+            tamanhoCampos[1] = pdu[7];
+            lenghtCampos = PDU.getShortValue(tamanhoCampos);
+            if(!(Arrays.equals(pdu, PDU.respostaByte((byte)0, (byte)0))))
+                res.add(pdu);
+        }
+        
+        return res;
+    }
     
     @Override
     public String criarDesafio(String desaf) throws IOException
@@ -205,4 +270,45 @@ public class ComunicacaoCliente implements Comunicacao.ComunicacaoUDP
         
         return pontuacao;
     }
+    
+    
+    public Pergunta getPergunta()throws IOException{
+        byte[] receiveData = new byte[1024];
+        byte[] pdu;
+        int i = 8;
+        short lenghtCampos = 0;
+        StringBuilder str = new StringBuilder();
+        StringBuilder op1= new StringBuilder();
+        StringBuilder op2=new StringBuilder();
+        StringBuilder op3=new StringBuilder();
+        DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);                
+        this.clientSocket.receive(receivePacket);
+        pdu = receivePacket.getData();
+        byte[] tamanhoCampos = new byte[2];
+        tamanhoCampos[0] = pdu[6]; tamanhoCampos[1] = pdu[7];
+        lenghtCampos = PDU.getShortValue(tamanhoCampos);        
+        
+        
+        for (; i < lenghtCampos + 8 && ((char) pdu[i] != '\0'); i++) 
+        {
+            str.append((char) pdu[i]);
+        }
+        i++;
+        for (; i < lenghtCampos + 8 && ((char) pdu[i] != '\0'); i++) {
+            op1.append((char) pdu[i]);
+        }
+        i++;
+        for (; i < lenghtCampos + 8 && ((char) pdu[i] != '\0'); i++) {
+            op2.append((char) pdu[i]);
+        }
+        i++;
+        for (; i < lenghtCampos + 8 && ((char) pdu[i] != '\0'); i++) {
+            op3.append((char) pdu[i]);
+        }
+        i++;
+    
+        return new Pergunta(str.toString(), op1.toString(), op2.toString(), op3.toString());
+    }
+    
+   
 }

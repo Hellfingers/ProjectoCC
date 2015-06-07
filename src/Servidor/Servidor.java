@@ -84,6 +84,15 @@ public class Servidor {
         return System.getProperty("user.dir")+"\\srv\\"+filename;
     }
     
+    public static String getPositionMusic(String nomeDes,int pos){
+        return Servidor.desafios.get(nomeDes).getPergunta(pos).getMusica();
+    }
+    
+    
+    public static String getPositionImage(String nomeDes,int pos){
+        return Servidor.desafios.get(nomeDes).getPergunta(pos).getImagem();
+    }
+    
     public static List<Desafio> listaDesafios(){
         List<Desafio> res=new ArrayList<>();
         for(Desafio d:Servidor.desafios.values())
@@ -288,10 +297,12 @@ public class Servidor {
                         break;
                     }
                     case 16:{
-                        
+                        sendMusica(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor);
+                        break;
                     }
                     case 17:{
-                        
+                        sendImagem(cabecalho, receiveData, receivePacket, serverSocket, dadosServidor);
+                        break;
                     }
                 }
             }
@@ -299,11 +310,7 @@ public class Servidor {
         { Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex); }
     }
     
-    private static void getMusicaDesafio(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
-            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor){
-        
-    }
-    
+       
     private static void getPerguntaDesafio(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
             DatagramSocket serverSocket, ComunicacaoServidor dadosServidor){
         StringBuilder desafio = new StringBuilder();
@@ -665,9 +672,82 @@ public class Servidor {
 
     }
      
-     private static void sendMusica(){
+     private static void sendMusica(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor) {
+
+        StringBuilder nome = new StringBuilder();
+
+        byte[] sendData = {};
+        byte[][] auxil = {};
+        int i = 8;
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            nome.append((char) pdu[i]);
+        }
+        i++;
+        int pos = (int) pdu[pdu.length - 1];
+
+        String nomeMusica = Servidor.getPositionMusic(nome.toString(), pos);
+
+        try {
+            auxil = PDU.FileToPacoteArray(nomeMusica);
+            for (byte[] pacote : auxil) {
+                sendData = pacote;
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+            //para nao perderes pacotes talvez aqui se meta um sleep;
+            }
+            sendData = PDU.respostaByte((byte) 0, (byte) 0);
+
+            InetAddress IPAddress = receivePacket.getAddress();
+            int port = receivePacket.getPort();
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+            serverSocket.send(sendPacket);
+            
+        } catch (IOException ioe) {
+            Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+        }
+
+    }
      
-     }
+    private static void sendImagem(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
+            DatagramSocket serverSocket, ComunicacaoServidor dadosServidor) {
+
+        StringBuilder nome = new StringBuilder();
+
+        byte[] sendData = {};
+        byte[][] auxil = {};
+        int i = 8;
+        for (; i < cabecalho[5] + 8 && ((char) pdu[i] != '\0'); i++) {
+            nome.append((char) pdu[i]);
+        }
+        i++;
+        int pos = (int) pdu[pdu.length - 1];
+
+        String nomeMusica = Servidor.getPositionImage(nome.toString(), pos);
+
+        try {
+            auxil = PDU.FileToPacoteArray(nomeMusica);
+            for (byte[] pacote : auxil) {
+                sendData = pacote;
+                InetAddress IPAddress = receivePacket.getAddress();
+                int port = receivePacket.getPort();
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+                serverSocket.send(sendPacket);
+                //Para nao Perderes pacotes talvez aqui metas um sleep;
+            }
+            sendData = PDU.respostaByte((byte) 0, (byte) 0);
+
+            InetAddress IPAddress = receivePacket.getAddress();
+            int port = receivePacket.getPort();
+            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+            serverSocket.send(sendPacket);
+        } catch (IOException ioe) {
+            Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ioe);
+        }
+
+    }
    
         /*public static void makeChallPDU(short[] cabecalho, byte[] pdu, DatagramPacket receivePacket,
             DatagramSocket serverSocket, ComunicacaoServidor dadosServidor) {

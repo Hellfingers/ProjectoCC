@@ -522,6 +522,23 @@ public class PDU
         return pduFinal;
     }
     
+    public static byte[] respostaByte(byte res, byte tipo)
+    {
+        byte[] formato = formataPDU();
+        
+        short tamanhoCampos = (short)(1);
+        
+        formato[4] = 0;
+        formato[5] = tipo;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[1 + formato.length];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        pduFinal[formato.length]=res;
+                
+        return pduFinal;
+    }
+    
     public static byte[] resposta2Bytes(int res,short label,byte tipo)
     {
         byte[] formato = formataPDU();
@@ -645,7 +662,7 @@ public class PDU
         return cabecalho;
     }
     
-    public static byte[][] FileToPacoteArray(String filename,int desc)throws IOException
+    public static byte[][] FileToPacoteArray(String filename)throws IOException
     {
         int sizeTotal = 0, nPacotes;
         byte[] resAux = IOUtils.toByteArray(new FileInputStream(filename));
