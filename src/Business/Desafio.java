@@ -93,12 +93,13 @@ public class Desafio {
     public void adicionaPont(String ut,int pont){
         Integer pontosAt=this.pontuacoes.get(ut);
         pontosAt+=pont;
+        this.pontuacoes.put(ut, pontosAt);
     }
 
     public void setPerguntas(HashMap<Integer, Pergunta> perguntas) {
         this.perguntas = perguntas;
     }
-
+    
     public void insertPergunta(Pergunta p) {
         this.perguntas.put(perguntas.size() + 1, p);
     }

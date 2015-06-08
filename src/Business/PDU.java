@@ -74,6 +74,23 @@ public class PDU
         return pduFinal;
     }
     
+    public static byte[] logoutPDU(String username){
+        String alcunhaTer = username+'\0';
+        byte[] formato = formataPDU();
+        byte[] str = alcunhaTer.getBytes();
+        short tamanhoCampos = (short)(str.length);
+        
+        formato[4] = 4;
+        formato[5] = 1;
+        formato[6] = (byte)(tamanhoCampos & 0xff);
+        formato[7] = (byte)((tamanhoCampos >> 8) & 0xff);
+        byte[] pduFinal = new byte[str.length + formato.length];
+        System.arraycopy(formato, 0, pduFinal, 0, formato.length);
+        System.arraycopy(str, 0, pduFinal, formato.length, str.length);
+                       
+        return pduFinal;
+    }
+    
     public static byte[] ReplistChallPDU(List<Desafio> lista){
         String infoRegisto=new String();
         for(Desafio d: lista)

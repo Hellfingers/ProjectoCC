@@ -17,6 +17,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -49,6 +50,39 @@ public class ComunicacaoCliente implements Comunicacao.ComunicacaoUDP
         return true;
     }
 
+    public boolean createDesafio(String username,String nomeDes) throws IOException{
+        byte[] sendData=PDU.makeChallPDU(username, nomeDes);
+        DatagramPacket sendPacket=new DatagramPacket(sendData, sendData.length, this.IPAddress, 9876);
+        this.clientSocket.send(sendPacket);
+        
+        return true;
+    }
+    
+    public boolean listChallenges()throws IOException{
+        byte[] sendData=PDU.listChallengesPDU();
+        DatagramPacket sendPacket=new DatagramPacket(sendData, sendData.length, this.IPAddress, 9876);
+        this.clientSocket.send(sendPacket);
+        
+        return true;
+    }
+    
+    public boolean acceptChallenge(String user, String nomeDes)throws IOException{
+        byte[] sendData=PDU.acceptChallengePDU(user, nomeDes);
+        DatagramPacket sendPacket=new DatagramPacket(sendData, sendData.length, this.IPAddress, 9876);
+        this.clientSocket.send(sendPacket);
+        
+        return true;
+    }
+    
+    public boolean listRankings() throws IOException{
+        byte[] sendData=PDU.listRankingPDU();
+        DatagramPacket sendPacket=new DatagramPacket(sendData, sendData.length, this.IPAddress, 9876);
+        this.clientSocket.send(sendPacket);
+        
+        return true;
+    }
+        
+    
     public Boolean registerServer(String user,String nome,String pass)throws IOException{
         byte[] SecInfo = pass.getBytes();
         byte[] sendData = PDU.registerPDU(nome, user, SecInfo);
@@ -97,6 +131,42 @@ public class ComunicacaoCliente implements Comunicacao.ComunicacaoUDP
         this.clientSocket.send(sendPacket);
         
         return true;
+    }
+    
+    public boolean sendExit(String username)throws IOException{
+        byte[] sendData = PDU.logoutPDU(username);
+        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, this.IPAddress, 9876);
+        this.clientSocket.send(sendPacket);
+        
+        return true;
+    }
+    
+    public ArrayList<String> getChallenges()throws IOException{
+        byte[] receiveData = new byte[1024];
+        byte[] pdu;
+        short lenghtCampos = 0;
+        int i=8;
+        StringBuilder str = new StringBuilder();
+        ArrayList<String> res=new ArrayList<>();
+
+        DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);                
+        this.clientSocket.receive(receivePacket);
+        pdu = receivePacket.getData();
+        byte[] tamanhoCampos = new byte[2];
+        tamanhoCampos[0] = pdu[6]; tamanhoCampos[1] = pdu[7];
+        lenghtCampos = PDU.getShortValue(tamanhoCampos);        
+        
+        for(;i<lenghtCampos+8;i++){
+        str=new StringBuilder();
+        while((char) pdu[i] != '\0') 
+        {
+            str.append((char) pdu[i]);
+            i++;
+        }
+        res.add(str.toString());
+        }
+        
+        return res;
     }
     
     public boolean getMusica(String d, int index)throws IOException{
@@ -168,6 +238,41 @@ public class ComunicacaoCliente implements Comunicacao.ComunicacaoUDP
         this.clientSocket.send(sendPacket);
         return true;
     }
+    
+    public TreeSet<ParUsernamePontos> getRankings()throws IOException{
+        byte[] receiveData = new byte[1024];
+        byte[] pdu;
+        short lenghtCampos = 0;
+        StringBuilder pontos=new StringBuilder();
+        int i=8;
+        StringBuilder str = new StringBuilder();
+        TreeSet<ParUsernamePontos> res=new TreeSet<>(new ComparatorPUP());
+
+        DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);                
+        this.clientSocket.receive(receivePacket);
+        pdu = receivePacket.getData();
+        byte[] tamanhoCampos = new byte[2];
+        tamanhoCampos[0] = pdu[6]; tamanhoCampos[1] = pdu[7];
+        lenghtCampos = PDU.getShortValue(tamanhoCampos);        
+        
+        for(;i<lenghtCampos+8;i++){
+        str=new StringBuilder();
+        while((char) pdu[i] != '\0') 
+        {
+            str.append((char) pdu[i]);
+            i++;
+        }
+        while((char) pdu[i]!='\0'){
+            pontos.append((char)pdu[i]);
+            i++;
+        }
+            
+        res.add(new ParUsernamePontos(str.toString(), Integer.parseInt(pontos.toString())));
+        }
+        
+        return res;
+    }
+    
     
     public TreeSet<byte[]> getPacotesMusica()throws IOException{
         byte[] receiveData = new byte[1024];

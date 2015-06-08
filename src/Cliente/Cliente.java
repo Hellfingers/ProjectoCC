@@ -20,8 +20,10 @@ import Business.ParUsernamePontos;
 import Business.Pergunta;
 import Business.Picture;
 import Business.Utilizador;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.TreeSet;
 
 /**
@@ -75,7 +77,14 @@ public class Cliente {
         } catch (BasicPlayerException | MalformedURLException e) {
         }
     }
+    public static String pathToImgFile(String imgName){
+        
+        return System.getProperty("user.dir") + "\\media\\images\\" + imgName;
+    }
     
+    public static String pathToMP3File(String songName){
+        return System.getProperty("user.dir") + "/media/music/" + songName;
+    }
     public static void showImage(String filename){
         String imgName = filename;
         String pathToImg = System.getProperty("user.dir") + "\\media\\images\\" + imgName;
@@ -126,6 +135,10 @@ public class Cliente {
                     }
                 }
                 Cliente.stopSong();
+                File f=new File(Cliente.pathToMP3File("0000"+currentQ+".mp3"));
+                File f1=new File(Cliente.pathToImgFile("0000"+currentQ+".jpg"));
+                f.delete();
+                f1.delete();
                 if(Cliente.menuInGame.getOpcao()==0) break;
             }
         }
@@ -133,49 +146,70 @@ public class Cliente {
     }
     
     public static void execMenuPrincipal(Utilizador ut) {
-        String inputT=new String();
-        String nomeDes=new String();
+        String inputT;
+        ArrayList<String> listaDesafios;
+        TreeSet<ParUsernamePontos> rankings;
+        try{
         do {
             Cliente.menuJogo.executa();
             switch (Cliente.menuJogo.getOpcao()) {
                 case 1: {
                     System.out.println("Insira o nome do desafio: ");
                     inputT = Input.lerString();
-                    //ComC.createDesafio(PDU.criaDesafioPDU(inputT));
-                    //Lê pacote da comunicação (Se OK siga para a frente, se erro manda mesg erro)
-                    //d=desafio criado
-                    Cliente.execMenuDesafios(ut,nomeDes);
+                    Cliente.comC.createDesafio(ut.getNome(), inputT);
+                    while(!Cliente.comC.getOK()){
+                        System.out.println("Insira o nome do desafio: ");
+                        inputT = Input.lerString();
+                        Cliente.comC.createDesafio(ut.getNome(), inputT);
+                    }
+                    Cliente.execMenuDesafios(ut,inputT);
                     break;
                 }
-                case 2: {/*Manda Classificações Espera resposta Apresenta Resposta*/
-
+                case 2: {
+                    Cliente.comC.listRankings();
+                    rankings=Cliente.comC.getRankings();
+                    for(ParUsernamePontos pup:rankings)
+                        System.out.println(pup.toString());
                     break;
                 }
-                case 3: {/*Manda Listas desafios espera resposta Apresenta Resposta*/;
+                case 3: {
+                    Cliente.comC.listChallenges();
+                    listaDesafios=Cliente.comC.getChallenges();
+                    for(String st:listaDesafios)
+                        System.out.println(st);
                     break;
                 }
                 case 4: {
                     System.out.println("Insira o nome do desafio a realizar: ");
                     inputT = Input.lerString(); 
-                    /*Envia msg de inicio de DESAFIO, ou erro, se erro avisa */
-                    /*d=Desafio a realizar*/
-                    Cliente.execMenuDesafios(ut,nomeDes);
+                    Cliente.comC.acceptChallenge(ut.getUsername(), inputT);
+                    while(!(Cliente.comC.getOK())){
+                        System.out.println("Insira o nome do desafio a realizar: ");
+                        inputT = Input.lerString();
+                        Cliente.comC.acceptChallenge(ut.getUsername(), inputT);
+                    }
+                    Cliente.execMenuDesafios(ut,inputT);
                     break;
                 }
 
-                case 0:{System.out.println("A Saír...");/*Manda pacote Exit Esperaok*/break;}
+                case 0:{System.out.println("A Saír...");Cliente.comC.sendExit(ut.getUsername());Cliente.comC.getOK();break;}
             }
         } while (Cliente.menuJogo.getOpcao() != 0);
     }
+        catch(IOException ioe){}
+}
 
     public static void main(String[] args) {
         
         Utilizador ut=null;
         ParUsernamePontos pup;
         String input1, input2,inputN;
-        //comC.
+        
         try {
             Cliente.comC = new ComunicacaoCliente();
+            Cliente.comC.sendHello();
+            while(!Cliente.comC.getOK())
+                Cliente.comC.sendHello();
             Cliente.CarregaMenus();
             Cliente.menuLogin.executa();
             switch (Cliente.menuLogin.getOpcao()) {
