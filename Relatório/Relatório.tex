@@ -20,13 +20,39 @@ Vamos descrever o essencial do projecto assim como a sua implementação e algum
 Este trabalho requer que seja desenvolvido um jogo baseando-se na distribuição de conteúdos com interação dos utilizadores. A aplicação não pode basear-se em tecnologia baseada em http logo deverá implementar comunicações entre servidores e comunicações UDP entre clientes e servidores. O objetivo do jogo é vários jogadores jogarem um desafio de perguntas de escolha múltipla onde o vencedor é o utilizador que acertar mais perguntas sendo que o critério de desempate é o tempo de resposta às questões certas. No fim do jogo a pontuação é integrada no score global do utilizador.
 
 \section{Implementação}
+O ponto fundamental neste trabalho é a comunicação entre cliente e servidor. Para a mesma foram criados PDU's para regular a comunicação entre os intervenientes. Os PDU's implementados são uma versão alterada dos apresentados no enunciado, de forma a incluir por exemplo o nome do utilizador ao criar um desafio.
 \subsection{Bibliotecas Utilizadas}
-As bibliotecas externas que foram utilizadas para a realização do projecto foram as seguintes:
+As bibliotecas/classes externas que foram utilizadas para a realização do projecto foram as seguintes:
 \begin{itemize}
 \item \emph{Apache.IOUtils} - Foi utilizada para utilizar o método que transforma um ficheiro num array de Bytes. As restantes classes da biblioteca Apache foram incluídas para evitar possíveis situações de incompatibilidade.
-\item \emph{JLGui.BasicPlayer} - Foi utilizada para reproduzir a Música.
+\item \emph{JLGui.BasicPlayer} - Foi utilizada para reproduzir a Música, todas as restantes bibliotecas dos packages jlgui foram incluídos para evitar possíveis situaçoes de incompatibilidade.
+\item \emph{Business.Picture} - Foi utilizada para apresentar Imagem sobre uma janela de Java Swing.
+\item \emph{Business.Crono} - Foi utilizada para contar os segundos entre o start() e stop().
+\item \emph{Business.Input} - Foi utilizada para possuír métodos robustos e protegidos de Excepções para Input do teclado.
+\item \emph{Business.Menu} - Foi utilizada para apresentar menus em formato texto.
 \end{itemize}
 \section{Modo de Funcionamento}
+\subsection{Servidor}
+Ao iniciar o servidor, este irá carregar os dados de imagens, texto e perguntas existentes (dos ficheiros Imagens.txt, Musicas.txt e Questoes.txt) para uma estrutura interna que servirá de base para todos os Clientes. De seguida entra em ciclo infinito à espera de mensagens vindas de clientes.\\
+Ao receber um pacote de um cliente, o servidor irá primeiro verificar o seu cabeçalho para saber qual é o tipo de ação que deve realizar e, de seguida irá processar o pedido e enviar a resposta correspondente.\\
+Para gerar um desafio é necessário que existam mais de 10 perguntas na estrutura e os desafios serão gerados com 10 perguntas aleatórias da base de dados.
+\subsection{Cliente}
+Um cliente ao iniciar irá enviar logo um pacote `Hello`, ficando à espera que o servidor responda com OK. Caso isso não aconteça, um novo pacote Hello é enviado até ser recebido um Ok.
+De seguida irá ser apresentado o menu de início de sessão/registo. Caso o utilizador pretenda registar-se deverá colocar o seu nome, alcunha e palavra passe. Será enviado um pacote `Register` com os três campos referidos, ficando à espera de um OK por parte do servidor. Caso haja erro o utilizador deverá inserir uma alcunha diferente. Caso o utilizador pretenda realizar o login no jogo deverá inserir a alcunha e a palavra passe. Será enviado um pacote `Login` com os campos referidos, ficando à espera que o servidor envie uma resposta com o nome e a pontuação actual. Neste momento encontra-se o menu inicial:
+\begin{itemize}
+\item "Criar Desafio" - Irá pedir ao utilizador que escolha o nome para o desafio, envia um MakeChallenge com o nome de utilizador e nome de desafio, espera um OK por parte do servidor e executa o menu de Desafio.
+\item "Ver Classificações" - Envia um List Rankings, espera pela resposta por parte do servidor e apresenta a resposta.
+\item "Listar Desafios" - Envia um ListChallenges, espera pela resposta do servidor e apresenta a mesma.
+\item "Realizar Desafio" - Irá pedir ao utilizador que escolha o nome do desafio que pretende realizar, será enviado um AcceptChallenge, esperando um OK do servidor e executa o Menu de Desafio.
+\item ''Sair'' - Irá enviar um pacote Logout ao servidor e espera um OK.
+\end{itemize}
+Caso se encontre no menu de Desafio, as seguintes opções são possíveis:
+\begin{itemize}
+\item "Modo Jogo" - Entrará no modo de jogo, em que irão ser carregadas e apresentadas, uma a uma as perguntas que perfazem o desafio (Música e Imagem incluidas). O utilizador terá sempre a opçao de desistir do desafio, premindo em 0, e será enviado um pacote Quit e a pontuação obtida até ao momento será descartada. No caso de se tratar de uma resposta a uma pergunta irá ser enviado um pacote com a alcunha do utilizador, o índice da pergunta no desafio, o nome do desafio e a opção escolhida.
+\item "Terminar Desafio" - Para terminar o desafio é necessário que o utilizador que o termina seja o utilizador que o criou. Será enviado um pacote EndChallenge com o nome do Utilizador actual e o nome do Desafio a terminar, esperando um OK.
+\item "Eliminar Desafio" - Será enviado um pacote Delete com o nome do Desafio, para o poder fazer é necessário que o desafio a eliminar se encontre nos desafios já terminados.
+\end{itemize}
+
 \section{Conclusão}
 
 
