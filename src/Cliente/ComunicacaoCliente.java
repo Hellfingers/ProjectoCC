@@ -228,7 +228,7 @@ public class ComunicacaoCliente implements Comunicacao.ComunicacaoUDP
         tamanhoCampos[0] = pdu[6]; tamanhoCampos[1] = pdu[7];
         lenghtCampos = PDU.getShortValue(tamanhoCampos);        
         
-        return pdu[pdu.length-1]==0;
+        return pdu[pdu.length-1]==0&&pdu[5]==0;
     }
     
     public boolean sendHello()throws IOException{
