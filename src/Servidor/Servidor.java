@@ -3,7 +3,7 @@
 To change this template, choose Tools | Templates
  * and open the template in the editor.
 
-Author = Ze
+Author = Ze Pedro
 */
 
 package Servidor;
@@ -65,7 +65,7 @@ public class Servidor {
         while(sc.hasNext())
             Servidor.sourceImg.add(sc.next());
         sc.close();
-        //Leitura do ficheiro de Músicas
+        //Leitura do ficheiro de MÃºsicas
         sc=new Scanner(new File(Servidor.createPathToFile("Musicas.txt")));
         sc.useDelimiter(System.getProperty("line.separator"));
         while(sc.hasNext())
@@ -229,7 +229,7 @@ public class Servidor {
         Servidor.carregaDB();
             System.out.println("Ficheiros Carregados");}
         catch(FileNotFoundException fnf){
-            System.err.println("Ficheiro não encontrado "+fnf.getMessage());
+            System.err.println("Ficheiro nÃ£o encontrado "+fnf.getMessage());
         }
         byte[] receiveData = new byte[1024];
         short[] cabecalho;
