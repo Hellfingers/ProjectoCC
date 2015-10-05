@@ -1,8 +1,12 @@
 ﻿/*
- * To change this template, choose Tools | Templates
+ * 
+To change this template, choose Tools | Templates
  * and open the template in the editor.
  
-Author = Zeee*/
+
+Author = Ze
+*/
+
 package Servidor;
 
 import Business.ComparatorPUP;
